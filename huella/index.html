@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Huella · Prototipo interactivo</title>
+<style>
+/* =========================================================
+   HUELLA · SISTEMA DE DISEÑO (tokens) — Actividad 5
+   Todas las pantallas y componentes usan solo estas variables.
+   ========================================================= */
+@font-face{font-family:"Nunito";src:url(fonts/nunito-latin-400-normal.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Nunito";src:url(fonts/nunito-latin-600-normal.woff2) format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"Nunito";src:url(fonts/nunito-latin-700-normal.woff2) format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:"Nunito";src:url(fonts/nunito-latin-800-normal.woff2) format("woff2");font-weight:800;font-display:swap}
+:root{
+  /* Color · base */
+  --c-bosque:#23302B; --c-bosque-2:#34433D; --c-crema:#FAF6EF; --c-arena:#F3ECE1; --c-superficie:#FFFFFF;
+  --c-borde:#E5DCCF; --c-borde-control:#8C938F;
+  --c-texto:#23302B; --c-texto-2:#5A625D; --c-texto-inv:#FAF6EF;
+  /* Color · marca y acción */
+  --c-primario:#B5482A; --c-primario-hover:#A8411F; --c-primario-suave:#FBE9E1; --c-acento:#D9653B; --c-acento-claro:#F2A27F;
+  /* Color · estados */
+  --c-exito:#2F6B4F; --c-exito-suave:#EAF3EE; --c-error:#A3271B; --c-error-suave:#FCEBE8;
+  --c-aviso:#7A4E00; --c-aviso-suave:#FDF1D6; --c-info:#235380; --c-info-suave:#E8F0F8;
+  --c-foco:#235380;
+  /* Tipografía */
+  --f-display:"Nunito", system-ui, sans-serif;
+  --f-texto:"Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Espaciado (base 4 px) */
+  --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.5rem; --s-6:2rem; --s-7:3rem;
+  /* Forma */
+  --r-sm:8px; --r-md:12px; --r-lg:12px; --r-pill:999px;
+  --sh-1:none;
+  --sh-2:0 4px 16px rgba(35,48,43,.18);
+  --toque:44px; /* objetivo táctil mínimo */
+  /* Color · variantes de neutros (estados de componentes) */
+  --c-desh-fondo:#E7E2DA; --c-desh-texto:#6B736E; --c-lleno-fondo:#F4F1EC; --c-lleno-borde:#A39C90; --c-lleno-texto:#4F5752;
+  --c-skel-1:#EFE8DD; --c-skel-2:#F7F2EA; --c-error-campo:#FFFBFA; --c-lateral-texto:#E9E3D9; --c-lateral-pie:#C9C4BA; --c-blanco:#FFFFFF;
+}
+html{font-size:100%}
+html.texto-grande{font-size:115%}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--c-crema);color:var(--c-texto);font-family:var(--f-texto);font-size:1rem;line-height:1.5;-webkit-font-smoothing:antialiased}
+img,svg{display:block}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--c-primario);font-weight:700}
+h1,h2,h3{font-family:var(--f-display);font-weight:800;margin:0}
+.t-display{font-family:var(--f-display);font-weight:800;font-size:2rem;line-height:1.1}
+h1,.t-h1{font-size:1.5rem;line-height:1.25}
+h2,.t-h2{font-size:1.125rem;line-height:1.3}
+h3,.t-h3{font-size:1.0625rem;line-height:1.35}
+p{margin:0}
+.t-small{font-size:.875rem;line-height:1.45}
+.t-muted{color:var(--c-texto-2)}
+.t-overline{font-size:.875rem;font-weight:700;color:var(--c-texto-2)}
+.t-label{font-weight:700;font-size:.9375rem}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+:focus{outline:none}
+:focus-visible{outline:3px solid var(--c-foco);outline-offset:2px;border-radius:6px}
+.skip{position:absolute;left:var(--s-4);top:-60px;background:var(--c-bosque);color:var(--c-texto-inv);padding:var(--s-3) var(--s-4);border-radius:var(--r-md);z-index:100;text-decoration:none}
+.skip:focus{top:var(--s-3)}
+.stack>*+*{margin-top:var(--s-4)}
+.stack-sm>*+*{margin-top:var(--s-2)}
+.stack-lg>*+*{margin-top:var(--s-5)}
+.row{display:flex;gap:var(--s-3);align-items:center}
+.wrap{flex-wrap:wrap}
+.ic{flex:none}
+
+/* ============ COMPONENTE: Botón ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s-2);min-height:48px;padding:0 var(--s-5);border-radius:var(--r-md);border:2px solid transparent;font-weight:800;font-size:1rem;cursor:pointer;text-decoration:none;transition:background .15s,border-color .15s,transform .1s;text-align:center}
+.btn:active{transform:translateY(1px)}
+.btn-primario{background:var(--c-primario);color:var(--c-blanco)}
+.btn-primario:hover{background:var(--c-primario-hover)}
+.btn-secundario{background:var(--c-superficie);color:var(--c-bosque);border-color:var(--c-bosque)}
+.btn-secundario:hover{background:var(--c-arena)}
+.btn-texto{background:transparent;color:var(--c-primario);padding:0 var(--s-3);min-height:var(--toque)}
+.btn-texto:hover{text-decoration:underline}
+.btn-peligro{background:var(--c-error);color:var(--c-blanco)}
+.btn[aria-busy="true"]{pointer-events:none;cursor:progress}
+.btn[disabled]{background:var(--c-desh-fondo);color:var(--c-desh-texto);border-color:transparent;cursor:not-allowed}
+.btn-bloque{width:100%}
+.btn-sm{min-height:40px;padding:0 var(--s-4);font-size:.9375rem}
+.cargando{display:flex;gap:12px;align-items:center;padding:40px 0;color:var(--c-texto-2);font-weight:700}
+.spinner.oscuro{width:28px;height:28px;border-color:var(--c-borde);border-top-color:var(--c-bosque)}
+.spinner{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,.4);border-top-color:var(--c-blanco);animation:gira .8s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;min-width:var(--toque);min-height:var(--toque);border-radius:var(--r-pill);border:0;background:transparent;cursor:pointer;color:var(--c-bosque)}
+.icon-btn:hover{background:var(--c-arena)}
+.btn-ayuda{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:var(--r-pill);background:var(--c-bosque);color:var(--c-texto-inv);border:0;font-weight:800;font-size:.9375rem;cursor:pointer}
+.btn-ayuda:hover{background:var(--c-bosque-2)}
+
+/* ============ COMPONENTE: Campo de texto ============ */
+.campo{display:flex;flex-direction:column;gap:6px}
+.campo label{font-weight:700}
+.campo .ayuda{font-size:.875rem;color:var(--c-texto-2)}
+.input{min-height:48px;padding:0 var(--s-4);border:2px solid var(--c-borde-control);border-radius:var(--r-md);background:var(--c-superficie);font-size:1rem}
+.input:hover{border-color:var(--c-texto-2)}
+.input:focus-visible{outline:3px solid var(--c-foco);outline-offset:1px;border-color:var(--c-foco);border-radius:var(--r-md)}
+.input[aria-invalid="true"]{border-color:var(--c-error);background:var(--c-error-campo)}
+.msg-error{display:flex;gap:6px;align-items:flex-start;color:var(--c-error);font-size:.875rem;font-weight:700}
+fieldset{border:0;padding:0;margin:0;min-width:0}
+legend{padding:0;font-weight:700;margin-bottom:var(--s-2)}
+
+/* ============ COMPONENTE: Chip / etiqueta ============ */
+.chips{display:flex;flex-wrap:wrap;gap:var(--s-2)}
+.chip-sel{position:relative}
+.chip-sel input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.chip-sel span{display:inline-flex;align-items:center;gap:6px;min-height:var(--toque);padding:0 var(--s-4);border-radius:var(--r-pill);border:2px solid var(--c-borde-control);background:var(--c-superficie);font-weight:700;font-size:.9375rem}
+.chip-sel input:checked+span{background:var(--c-bosque);border-color:var(--c-bosque);color:var(--c-texto-inv)}
+.chip-sel input:focus-visible+span{outline:3px solid var(--c-foco);outline-offset:2px}
+.chip-sel .chk{display:none}
+.chip-sel input:checked+span .chk{display:block}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:var(--r-pill);background:var(--c-arena);font-size:.8125rem;font-weight:700;color:var(--c-bosque)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--r-pill);font-size:.8125rem;font-weight:800}
+.badge-exito{background:var(--c-exito-suave);color:var(--c-exito)}
+.badge-aviso{background:var(--c-aviso-suave);color:var(--c-aviso)}
+.badge-info{background:var(--c-info-suave);color:var(--c-info)}
+.filtro{min-height:var(--toque);padding:0 var(--s-4);border-radius:var(--r-pill);border:2px solid var(--c-borde-control);background:var(--c-superficie);font-weight:700;cursor:pointer}
+.filtro[aria-pressed="true"]{background:var(--c-bosque);color:var(--c-texto-inv);border-color:var(--c-bosque)}
+
+/* ============ COMPONENTE: Tarjeta ============ */
+.card{background:var(--c-superficie);border:1px solid var(--c-borde);border-radius:var(--r-lg);padding:var(--s-5);box-shadow:var(--sh-1)}
+.card-plana{background:var(--c-superficie);border:1px solid var(--c-borde);border-radius:var(--r-lg);padding:var(--s-4)}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:var(--s-3);margin-bottom:var(--s-3)}
+.animal-card{display:flex;gap:var(--s-4);align-items:center;text-align:left;width:100%;background:var(--c-superficie);border:1px solid var(--c-borde);border-radius:var(--r-lg);padding:var(--s-4);box-shadow:var(--sh-1);cursor:pointer;text-decoration:none;color:inherit}
+.animal-card:hover{border-color:var(--c-borde-control)}
+.animal-card .nombre{font-family:var(--f-display);font-weight:800;font-size:1.125rem}
+.avatar{border-radius:50%;overflow:hidden;flex:none}
+.encuentro{display:grid;grid-template-columns:auto 1fr;gap:var(--s-4);align-items:center}
+.dato{display:flex;gap:8px;align-items:center;color:var(--c-texto-2);font-size:.9375rem}
+
+/* ============ COMPONENTE: Mensaje de estado ============ */
+.alerta{display:flex;gap:var(--s-3);padding:var(--s-4);border-radius:var(--r-md);border-left:5px solid;font-size:.9375rem}
+.alerta strong{display:block}
+.alerta-info{background:var(--c-info-suave);color:var(--c-info);border-color:var(--c-info)}
+.alerta-exito{background:var(--c-exito-suave);color:var(--c-exito);border-color:var(--c-exito)}
+.alerta-error{background:var(--c-error-suave);color:var(--c-error);border-color:var(--c-error)}
+.alerta-aviso{background:var(--c-aviso-suave);color:var(--c-aviso);border-color:var(--c-aviso)}
+.alerta p{color:var(--c-texto)}
+.vacio{text-align:center;padding:var(--s-6) var(--s-4);border:2px dashed var(--c-borde);border-radius:var(--r-lg);background:rgba(255,255,255,.5)}
+.vacio .ilus{display:flex;justify-content:center;margin:0 0 var(--s-3);color:var(--c-acento)}
+.skel{background:linear-gradient(90deg,var(--c-skel-1) 25%,var(--c-skel-2) 50%,var(--c-skel-1) 75%);background-size:200% 100%;animation:brillo 1.2s infinite;border-radius:var(--r-md)}
+@keyframes brillo{to{background-position:-200% 0}}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--c-bosque);color:var(--c-texto-inv);padding:var(--s-3) var(--s-5);border-radius:var(--r-md);box-shadow:var(--sh-2);font-weight:700;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s,visibility .25s;visibility:hidden;z-index:60;display:flex;gap:8px;align-items:center;max-width:calc(100% - 32px)}
+.toast.ver{opacity:1;visibility:visible;transform:translateX(-50%)}
+body.en-flujo .toast{bottom:auto;top:76px;transform:translateX(-50%) translateY(-20px)}
+body.en-flujo .toast.ver{transform:translateX(-50%)}
+
+/* ============ COMPONENTE: Selector de ánimo ============ */
+.animo{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;overflow-wrap:anywhere}
+.animo label,.animo .animo-btn{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:var(--s-3) 2px;border:2px solid var(--c-borde);border-radius:var(--r-md);background:var(--c-superficie);cursor:pointer;text-align:center;font-weight:700;font-size:.75rem;line-height:1.2;min-height:92px}
+.animo input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.animo .num{font-family:var(--f-display);font-size:1rem}
+.animo .animo-btn:hover{border-color:var(--c-bosque)}
+.animo label:has(input:checked){border-color:var(--c-bosque);background:var(--c-bosque);color:var(--c-texto-inv)}
+.animo label:has(input:focus-visible){outline:3px solid var(--c-foco);outline-offset:2px}
+
+/* ============ COMPONENTE: Franja horaria ============ */
+.franjas{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--s-2)}
+.franja{position:relative}
+.franja input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.franja .caja,.franja-llena{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;width:100%;min-height:64px;padding:var(--s-2) var(--s-4);border:2px solid var(--c-borde-control);border-radius:var(--r-md);background:var(--c-superficie);text-align:left;cursor:pointer}
+.franja .hora,.franja-llena .hora{font-family:var(--f-display);font-weight:800;font-size:1.125rem}
+.franja .cupo{font-size:.8125rem;font-weight:700;color:var(--c-exito)}
+.franja .cupo.ultimo{color:var(--c-aviso)}
+.franja input:checked+.caja{border-color:var(--c-primario);background:var(--c-primario-suave);box-shadow:inset 0 0 0 1px var(--c-primario)}
+.franja input:checked+.caja .hora::after{content:" ✓"}
+.franja input:focus-visible+.caja{outline:3px solid var(--c-foco);outline-offset:2px}
+.franja-llena{border-style:dashed;border-color:var(--c-lleno-borde);background:var(--c-lleno-fondo);color:var(--c-lleno-texto)}
+.franja-llena .hora{text-decoration:line-through}
+.franja-llena .cupo{font-size:.8125rem;font-weight:700}
+.dias{display:flex;gap:var(--s-2);overflow-x:auto;padding:4px 2px 8px;scrollbar-width:thin}
+.dia{position:relative;flex:none}
+.dia input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.dia>span{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:72px;min-height:72px;padding:6px 8px;border:2px solid var(--c-borde-control);border-radius:var(--r-md);background:var(--c-superficie);font-weight:700;font-size:.8125rem;line-height:1.2}
+.dia>span b{font-family:var(--f-display);font-size:1.375rem;font-weight:800}
+.dia input:checked+span{background:var(--c-bosque);color:var(--c-texto-inv);border-color:var(--c-bosque)}
+.dia input:focus-visible+span{outline:3px solid var(--c-foco);outline-offset:2px}
+.dia .lleno{font-size:.75rem;font-weight:800;color:var(--c-error)}
+.dia input:checked+span .lleno{color:var(--c-acento-claro)}
+
+/* ============ COMPONENTE: Indicador de pasos ============ */
+.pasos{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
+.pasos .txt{font-weight:800;font-size:.875rem}
+.pasos ol{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;list-style:none;margin:0;padding:0}
+.pasos li{height:6px;border-radius:3px;background:var(--c-borde)}
+.pasos li.hecho{background:var(--c-bosque)}
+.pasos li.actual{background:var(--c-primario)}
+
+/* ============ COMPONENTE: Interruptor ============ */
+.switch{display:flex;justify-content:space-between;align-items:center;gap:var(--s-4);min-height:var(--toque);cursor:pointer}
+.switch input{appearance:none;width:52px;height:30px;border-radius:15px;background:var(--c-borde-control);position:relative;flex:none;cursor:pointer;margin:0;transition:.2s}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--c-blanco);transition:.2s}
+.switch input:checked{background:var(--c-exito)}
+.switch input:checked::after{left:25px}
+.switch input:disabled{opacity:.7;cursor:not-allowed}
+.check{display:flex;gap:var(--s-3);align-items:flex-start;cursor:pointer;min-height:var(--toque);padding-top:10px}
+.check input{width:24px;height:24px;accent-color:var(--c-bosque);flex:none;margin:0}
+
+/* ============ ESTRUCTURA: app, encabezado, navegación ============ */
+.app{min-height:100vh}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(250,246,239,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--c-borde)}
+.topbar-in{display:flex;align-items:center;gap:var(--s-3);min-height:64px;padding:var(--s-2) var(--s-4);max-width:1120px;margin:0 auto}
+.topbar .titulo{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--f-display);font-weight:800;font-size:1.125rem;text-align:center}
+.avatar-btn{width:var(--toque);height:var(--toque);border-radius:50%;border:2px solid var(--c-borde);background:var(--c-arena);font-family:var(--f-display);font-weight:800;font-size:1.125rem;cursor:pointer;color:var(--c-bosque);flex:none}
+main{display:block;max-width:1120px;margin:0 auto;padding:var(--s-5) var(--s-4) 120px}
+main:focus{outline:none}
+h1[tabindex="-1"]:focus,.alerta[tabindex="-1"]:focus,#conf-alerta:focus{outline:none}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--c-superficie);border-top:1px solid var(--c-borde);box-shadow:0 -4px 16px rgba(35,48,43,.06)}
+.tabbar ul{display:grid;grid-template-columns:repeat(5,1fr);list-style:none;margin:0 auto;padding:6px 4px calc(6px + env(safe-area-inset-bottom));max-width:560px;align-items:end}
+.tab{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:52px;justify-content:center;font-size:.75rem;font-weight:700;color:var(--c-texto-2);text-decoration:none;border-radius:var(--r-md)}
+.tab[aria-current="page"]{color:var(--c-primario)}
+.tab[aria-current="page"] .lbl{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+.tab-match{margin-top:-26px}
+.tab-match .fab{width:56px;height:56px;border-radius:50%;background:var(--c-primario);color:var(--c-blanco);display:flex;align-items:center;justify-content:center;border:4px solid var(--c-superficie)}
+.tab-match{color:var(--c-primario)}
+.sidebar{display:none}
+.flow-actions{position:sticky;bottom:0;z-index:15;margin:var(--s-5) calc(-1 * var(--s-4)) 0;padding:var(--s-3) var(--s-4) calc(var(--s-3) + env(safe-area-inset-bottom));background:rgba(250,246,239,.97);border-top:1px solid var(--c-borde);display:flex;gap:var(--s-3)}
+.flow-actions .btn{flex:1}
+.flow-actions{flex-wrap:wrap}
+.pendiente{flex-basis:100%;display:flex;gap:6px;align-items:center;color:var(--c-aviso);font-weight:700;font-size:.875rem;margin:0}
+body.en-flujo .tabbar{display:none}
+body:not(.en-flujo):not(.sin-nav) .flow-actions{bottom:72px}
+body.en-flujo main{padding-bottom:var(--s-4)}
+body.sin-nav .tabbar{display:none}
+body.sin-nav main{padding-bottom:var(--s-6)}
+
+/* Hero del animal */
+.hero-animal{position:relative;border-radius:var(--r-lg);overflow:hidden;display:flex;align-items:center;justify-content:center;padding:var(--s-4);min-height:180px;border:1px solid var(--c-borde)}
+.hero-animal .verif{position:absolute;left:var(--s-3);top:var(--s-3)}
+.grid-2{display:grid;gap:var(--s-4)}
+.grid-2>*,.flujo-wrap,.estrecho{min-width:0}
+.grid-cards{display:grid;gap:var(--s-3)}
+.mini-barras{display:flex;align-items:flex-end;gap:6px;height:56px}
+.mini-barras i{flex:1;border:2px dashed var(--c-borde);border-bottom:0;border-radius:6px 6px 0 0}
+.lineas a{word-break:break-word}
+
+/* Diálogo / hoja */
+dialog{border:0;padding:0;border-radius:var(--r-lg);max-width:560px;width:calc(100% - 24px);max-height:88vh;box-shadow:var(--sh-2);background:var(--c-superficie);color:var(--c-texto)}
+dialog::backdrop{background:rgba(35,48,43,.55)}
+.dlg-head{position:sticky;top:0;background:var(--c-superficie);display:flex;justify-content:space-between;align-items:center;gap:var(--s-3);padding:var(--s-4) var(--s-4) var(--s-3) var(--s-5);border-bottom:1px solid var(--c-borde);z-index:1}
+.dlg-body{padding:var(--s-5)}
+.dlg-foot{display:flex;gap:var(--s-3);justify-content:flex-end;padding:0 var(--s-5) var(--s-5);flex-wrap:wrap}
+.guia-item{display:grid;grid-template-columns:40px 1fr;gap:var(--s-3)}
+.guia-item .n{width:40px;height:40px;border-radius:50%;background:var(--c-primario-suave);color:var(--c-primario);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:800}
+
+/* Panel del prototipo (no es parte del producto) */
+.proto-btn{position:fixed;right:12px;bottom:90px;z-index:40;display:flex;align-items:center;gap:6px;min-height:40px;padding:0 12px;border-radius:var(--r-pill);border:2px dashed var(--c-desh-texto);background:var(--c-blanco);color:#3F4743;font-weight:800;font-size:.8125rem;cursor:pointer;box-shadow:var(--sh-1)}
+body.en-flujo .proto-btn{bottom:96px}
+body.capture .proto-btn,body.vista-movil .proto-btn{display:none}
+.proto-panel .switch{border-bottom:1px solid var(--c-borde);padding:6px 0}
+
+/* Bienvenida */
+.bienvenida{max-width:520px;margin:0 auto;padding-top:var(--s-4)}
+.hero-bienvenida{background:var(--c-superficie);border:1px solid var(--c-borde);border-radius:var(--r-lg);padding:var(--s-5)}
+.hero-bienvenida .t-overline{color:var(--c-acento-claro)}
+.hero-bienvenida .paws{margin:12px -10px -30px auto;opacity:.9}
+.hero-bienvenida .marca{font-family:var(--f-display);font-weight:800;font-size:2.25rem;line-height:1;color:var(--c-primario)}
+.beneficios{list-style:none;padding:0;margin:0}
+.beneficios li{display:flex;gap:var(--s-3);align-items:flex-start;padding:var(--s-2) 0}
+.beneficios .ic{color:var(--c-exito)}
+
+/* ============ RESPONSIVE ============ */
+@media (min-width:min(640px,100%)){
+  .franjas{grid-template-columns:repeat(4,1fr)}
+  .grid-cards{grid-template-columns:repeat(2,1fr)}
+  main{padding-left:var(--s-5);padding-right:var(--s-5)}
+}
+@media (min-width:1024px){
+  h1,.t-h1{font-size:1.75rem}
+  .app{display:grid;grid-template-columns:256px 1fr}
+  .sidebar{display:flex;flex-direction:column;gap:var(--s-2);position:sticky;top:0;height:100vh;background:var(--c-superficie);border-right:1px solid var(--c-borde);color:var(--c-texto);padding:var(--s-5) var(--s-4)}
+  .sidebar .logo{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:800;font-size:1.5rem;padding:0 var(--s-2) var(--s-4);color:var(--c-primario);text-decoration:none}
+  .sidebar .logo .ic{color:var(--c-acento)}
+  .sidebar .btn-primario{margin:0 0 var(--s-4)}
+  .sidebar nav ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+  .side-link{display:flex;align-items:center;gap:var(--s-3);min-height:48px;padding:0 var(--s-3);border-radius:var(--r-md);color:var(--c-texto);text-decoration:none;font-weight:700}
+  .side-link:hover{background:var(--c-arena)}
+  .side-link[aria-current="page"]{background:var(--c-arena);color:var(--c-primario);box-shadow:inset 3px 0 0 var(--c-primario)}
+
+  .sidebar .pie{margin-top:auto;font-size:.8125rem;color:var(--c-texto-2)}
+  .tabbar{display:none}
+  .topbar .titulo{text-align:left;font-size:1.25rem}
+  .topbar .avatar-btn{order:3}
+  main{padding:var(--s-6) var(--s-6) var(--s-7)}
+  body.sin-nav .app{grid-template-columns:1fr}
+  body.sin-nav .sidebar{display:none}
+  .flow-actions{position:static;background:transparent;border:0;margin:var(--s-6) 0 0;padding:0;justify-content:flex-end}
+  .flow-actions .btn{flex:0 0 auto;min-width:min(200px,100%)}
+  .grid-2{grid-template-columns:1fr 1fr;align-items:start;gap:var(--s-5)}
+  .grid-2.ancho-izq{grid-template-columns:1.15fr .85fr}
+  .grid-cards{grid-template-columns:repeat(3,1fr)}
+  .flujo-wrap{max-width:960px}
+  .estrecho{max-width:720px}
+  .hero-animal{min-height:300px}
+  .dias{flex-wrap:wrap;overflow:visible}
+  .pasos{max-width:560px}
+  body:not(.sin-nav) .marca-top{display:none!important}
+  .toast{bottom:32px}
+  .proto-btn,body.en-flujo .proto-btn{bottom:16px}
+  .bienvenida{max-width:960px;display:grid;grid-template-columns:1.1fr .9fr;gap:var(--s-6);align-items:center;padding-top:var(--s-6)}
+  .hero-bienvenida{padding:var(--s-6)}
+  .hero-bienvenida .marca{font-size:2.75rem}
+  .hero-bienvenida .paws{position:absolute;right:0;bottom:0;margin:0}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ============ Páginas de documentación: sistema y tablero ============ */
+.doc{max-width:1120px;margin:0 auto;padding:var(--s-5) var(--s-4) var(--s-7)}
+.doc-nav{background:var(--c-superficie);border-bottom:1px solid var(--c-borde)}
+.doc-nav .in{max-width:1120px;margin:0 auto;display:flex;gap:var(--s-2);align-items:center;flex-wrap:wrap;padding:var(--s-3) var(--s-4)}
+.doc-nav a{color:var(--c-texto);text-decoration:none;padding:8px 12px;border-radius:var(--r-md);font-weight:700}
+.doc-nav a[aria-current="page"]{background:var(--c-arena);color:var(--c-primario)}
+
+.doc-nav .marca{font-family:var(--f-display);font-weight:800;font-size:1.375rem;margin-right:auto;display:flex;gap:8px;align-items:center}
+.doc section{margin-top:var(--s-7)}
+.doc h2{font-size:1.5rem;margin-bottom:var(--s-2)}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:var(--s-3)}
+.swatch{border:1px solid var(--c-borde);border-radius:var(--r-md);overflow:hidden;background:var(--c-blanco)}
+.swatch .m{height:72px;display:flex;align-items:flex-end;padding:8px;font-weight:800;font-size:.8125rem}
+.swatch .i{padding:10px 12px;font-size:.8125rem}
+.comp{display:grid;gap:var(--s-4);grid-template-columns:1fr;border:1px solid var(--c-borde);border-radius:var(--r-lg);background:var(--c-blanco);padding:var(--s-4);margin-top:var(--s-4)}
+.comp>*{min-width:0}
+.comp .demo{display:flex;flex-wrap:wrap;gap:var(--s-3);align-items:flex-start;background:var(--c-crema);border-radius:var(--r-md);padding:var(--s-4)}
+.comp .demo .var{display:flex;flex-direction:column;gap:6px}
+.comp .demo .var::before{content:attr(data-l);font-size:.75rem;font-weight:800;color:var(--c-texto-2);text-transform:uppercase;letter-spacing:.06em}
+@media (min-width:min(900px,100%)){.comp{grid-template-columns:300px 1fr}}
+.tabla{width:100%;border-collapse:collapse;font-size:.9375rem;background:var(--c-blanco)}
+.tabla th,.tabla td{border-bottom:1px solid var(--c-borde);padding:10px;text-align:left;vertical-align:top}
+.tabla th{background:var(--c-arena)}
+.marco{display:flex;justify-content:center}
+.marco iframe{border:10px solid var(--c-bosque);border-radius:36px;background:#fff;max-width:100%}
+.hubs{display:grid;gap:var(--s-4);grid-template-columns:repeat(auto-fill,minmax(min(240px,100%),1fr));margin-top:var(--s-5)}
+.hub{text-decoration:none;color:inherit;display:block;font-weight:400}
+.hub:hover{border-color:var(--c-primario)}
+.galeria{display:grid;gap:var(--s-5);grid-template-columns:repeat(auto-fill,minmax(min(240px,100%),1fr))}
+.galeria figure{margin:0;background:var(--c-blanco);border:1px solid var(--c-borde);border-radius:var(--r-lg);padding:var(--s-3)}
+.galeria img{width:100%;height:auto;border-radius:var(--r-md);border:1px solid var(--c-borde)}
+.galeria figcaption{font-size:.875rem;padding-top:var(--s-2)}
+.galeria.desk{grid-template-columns:repeat(auto-fill,minmax(min(420px,100%),1fr))}
+.tabla-wrap{overflow-x:auto;margin-top:16px}
+</style>
+</head>
+<body>
+<a class="skip" href="#main" id="skip">Saltar al contenido</a>
+<div class="app" id="app">
+  <aside class="sidebar" id="sidebar" aria-label="Navegación principal (escritorio)"></aside>
+  <div class="shell">
+    <header class="topbar" id="topbar"></header>
+    <main id="main" tabindex="-1"></main>
+  </div>
+</div>
+<nav class="tabbar" id="tabbar" aria-label="Navegación principal"></nav>
+<div id="docroot"></div>
+<dialog id="dlg" aria-labelledby="dlg-title"></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="sr-only" id="anuncio" aria-live="polite"></div>
+<button class="proto-btn" id="proto-btn" type="button" aria-haspopup="dialog">⚙ Controles del prototipo</button>
+
+<script>
+/* =========================================================
+   ÍCONOS (línea 2 px, esquinas redondeadas, 24×24)
+   ========================================================= */
+const P={
+ home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+ compass:'<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>',
+ calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
+ paw:'<g fill="currentColor" stroke="none"><ellipse cx="12" cy="16.2" rx="4.8" ry="4"/><ellipse cx="5.6" cy="10.6" rx="2" ry="2.6"/><ellipse cx="9.6" cy="6.4" rx="2" ry="2.7"/><ellipse cx="14.4" cy="6.4" rx="2" ry="2.7"/><ellipse cx="18.4" cy="10.6" rx="2" ry="2.6"/></g>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1 1-1.1 1.7v.4"/><path d="M12 17.2h.01"/>',
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+ back:'<path d="m15 18-6-6 6-6"/>',
+ next:'<path d="m9 6 6 6-6 6"/>',
+ close:'<path d="M18 6 6 18M6 6l12 12"/>',
+ check:'<path d="m5 12.5 4.5 4.5L19.5 7"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ pin:'<path d="M12 21s-7-6.3-7-12a7 7 0 0 1 14 0c0 5.7-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
+ alert:'<path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+ info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+ phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
+ chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/>',
+ refresh:'<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>',
+ heart:'<path d="M12 20s-7-4.4-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.6-9 9-9 9z"/>',
+ lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+ shield:'<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
+ users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/>',
+ book:'<path d="M4 19.5V5a2 2 0 0 1 2-2h14v15H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h14"/>',
+ bell:'<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/>',
+ sparkle:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>',
+ walk:'<circle cx="13" cy="4.5" r="2"/><path d="m9 21 2.5-6.5L14 17v4M8 11l3-4 3 1 2 4M11.5 14.5 10 9"/>',
+ trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+ settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 15.3H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.2-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 2.9-1.2V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0 1.2 2.9h.1a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5.9z"/>'
+};
+const ic=(n,s=24,extra='',cls='')=>`<svg class="ic${cls?' '+cls:''}" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" ${extra}>${P[n]}</svg>`;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* Caras del selector de ánimo (1 = muy mal … 5 = muy bien) */
+const ANIMOS=['Muy mal','Mal','Regular','Bien','Muy bien'];
+function cara(m,s=34){const k=[-3.6,-1.8,0,1.8,3.6][m-1];
+ return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><circle cx="8.8" cy="10" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.2" cy="10" r="1.1" fill="currentColor" stroke="none"/><path d="M8 ${15.6-k/3}Q12 ${15.6+k} 16 ${15.6-k/3}"/></svg>`}
+
+/* =========================================================
+   ILUSTRACIONES de animales (SVG original, sin fotos)
+   ========================================================= */
+function mascota(a,s=96){
+ const c=a.colores;
+ if(a.especie==='gato') return `<svg width="${s}" height="${s}" viewBox="0 0 200 200" role="img" aria-label="Ilustración de ${a.nombre}, ${a.desc}"><circle cx="100" cy="100" r="100" fill="${c.fondo}"/>
+ <polygon points="50,92 58,32 98,66" fill="${c.pelo}"/><polygon points="150,92 142,32 102,66" fill="${c.pelo}"/>
+ <polygon points="60,80 64,48 86,66" fill="#F3B9A8"/><polygon points="140,80 136,48 114,66" fill="#F3B9A8"/>
+ <ellipse cx="100" cy="116" rx="60" ry="54" fill="${c.pelo}"/>
+ ${c.mancha?`<path d="M70 78 Q100 60 130 78 Q118 96 100 92 Q82 96 70 78z" fill="${c.oreja}"/>`:''}
+ <ellipse cx="100" cy="138" rx="30" ry="20" fill="#FFF7EC"/>
+ <ellipse cx="78" cy="110" rx="7" ry="9" fill="#23302B"/><ellipse cx="122" cy="110" rx="7" ry="9" fill="#23302B"/>
+ <circle cx="80.5" cy="106.5" r="2.2" fill="#fff"/><circle cx="124.5" cy="106.5" r="2.2" fill="#fff"/>
+ <path d="M94 128h12l-6 7z" fill="#E08A7A"/><path d="M100 135q-5 8-12 4M100 135q5 8 12 4" stroke="#23302B" stroke-width="3" fill="none" stroke-linecap="round"/>
+ <path d="M60 128h-26M62 136l-24 6M140 128h26M138 136l24 6" stroke="#23302B" stroke-width="2.5" stroke-linecap="round" opacity=".6"/></svg>`;
+ return `<svg width="${s}" height="${s}" viewBox="0 0 200 200" role="img" aria-label="Ilustración de ${a.nombre}, ${a.desc}"><circle cx="100" cy="100" r="100" fill="${c.fondo}"/>
+ <ellipse cx="100" cy="112" rx="58" ry="56" fill="${c.pelo}"/>
+ ${c.mancha?`<ellipse cx="124" cy="96" rx="20" ry="18" fill="${c.oreja}"/>`:''}
+ <ellipse cx="48" cy="104" rx="20" ry="42" fill="${c.oreja}" transform="rotate(18 48 104)"/><ellipse cx="152" cy="104" rx="20" ry="42" fill="${c.oreja}" transform="rotate(-18 152 104)"/>
+ <ellipse cx="100" cy="142" rx="32" ry="24" fill="#FFF7EC"/>
+ <circle cx="78" cy="106" r="7" fill="#23302B"/><circle cx="122" cy="106" r="7" fill="#23302B"/>
+ <circle cx="80.5" cy="103.5" r="2.2" fill="#fff"/><circle cx="124.5" cy="103.5" r="2.2" fill="#fff"/>
+ <ellipse cx="100" cy="130" rx="11" ry="8" fill="#23302B"/>
+ <path d="M100 138v6M100 144q-8 8-16 2M100 144q8 8 16 2" stroke="#23302B" stroke-width="3" fill="none" stroke-linecap="round"/>
+ ${a.energia>=3?'<path d="M96 150q4 12 8 0z" fill="#E0796B"/>':''}</svg>`;
+}
+
+/* =========================================================
+   DATOS SIMULADOS (sin backend; refugios y animales ficticios)
+   ========================================================= */
+const ANIMALES=[
+ {id:'toby',nombre:'Toby',especie:'perro',sexo:'m',edad:'3 años',tamano:'pequeño',energia:1,sociable:true,refugio:'Refugio Patitas',barrio:'Suba',km:2.1,
+  tags:['Tranquilo','Pequeño','Caminador'],historia:'Llegó al refugio hace 8 meses. Camina despacio, se detiene a oler cada árbol y se acerca solo cuando ya te conoce.',
+  colores:{pelo:'#C98A5A',oreja:'#8A5432',fondo:'#F6E3D3',mancha:true},desc:'perro pequeño de pelo café'},
+ {id:'nube',nombre:'Nube',especie:'gato',sexo:'f',edad:'2 años',tamano:'pequeño',energia:1,sociable:true,refugio:'Casa Gatuna',barrio:'Teusaquillo',km:1.4,
+  tags:['Calmada','Ronroneadora','Le gusta el regazo'],historia:'La rescataron de un parqueadero. Le encanta dormir en el regazo y ronronea apenas le hablas.',
+  colores:{pelo:'#9AA3A8',oreja:'#6E777C',fondo:'#E3EAEE',mancha:true},desc:'gata gris'},
+ {id:'canela',nombre:'Canela',especie:'perro',sexo:'f',edad:'5 años',tamano:'mediano',energia:2,sociable:true,refugio:'Refugio Patitas',barrio:'Suba',km:2.1,
+  tags:['Sociable','Mediana','Paseos en grupo'],historia:'Es la anfitriona del refugio: saluda a todos los voluntarios y disfruta los paseos en manada.',
+  colores:{pelo:'#D9A066',oreja:'#A86B35',fondo:'#FBEBD2'},desc:'perra mediana color canela'},
+ {id:'mora',nombre:'Mora',especie:'gato',sexo:'f',edad:'1 año',tamano:'pequeño',energia:2,sociable:false,refugio:'Casa Gatuna',barrio:'Teusaquillo',km:1.4,
+  tags:['Curiosa','Juguetona','Tímida al inicio'],historia:'Explora todo con cautela. Necesita unos minutos para confiar, después no deja de jugar.',
+  colores:{pelo:'#3E3A38',oreja:'#2A2725',fondo:'#E8E2EC'},desc:'gata negra'},
+ {id:'rayo',nombre:'Rayo',especie:'perro',sexo:'m',edad:'1 año',tamano:'mediano',energia:3,sociable:true,refugio:'Huellas del Norte',barrio:'Usaquén',km:5.8,
+  tags:['Juguetón','Mediano','Corredor'],historia:'Tiene energía para dar y regalar. Ideal para días en los que quieres moverte y reír.',
+  colores:{pelo:'#5B4B3F',oreja:'#3A2F27',fondo:'#E6E1DA'},desc:'perro mediano café oscuro'},
+ {id:'bruno',nombre:'Bruno',especie:'perro',sexo:'m',edad:'6 años',tamano:'grande',energia:2,sociable:false,refugio:'Huellas del Norte',barrio:'Usaquén',km:5.8,
+  tags:['Noble','Grande','Paciente'],historia:'Grande pero muy suave. Prefiere los paseos con una sola persona y lugares tranquilos.',
+  colores:{pelo:'#2F2A26',oreja:'#1E1A17',fondo:'#E7E4DE',mancha:false},desc:'perro grande negro'}
+];
+const CAUSAS=['Parciales o estudio','Trabajo','Sueño','Soledad','Dinero','Familia','Otra'];
+const TIPO=a=>a.especie==='gato'?'visita':'paseo';
+const TIPO_L=a=>a.especie==='gato'?'Visita al refugio · 45 min':'Paseo acompañado · 45 min';
+const GUIA=a=>a.especie==='gato'?'Guía de la primera visita':'Guía del primer paseo';
+const lo=a=>a.sexo==='f'?'la':'lo', el=a=>a.sexo==='f'?'ella':'él';
+const byId=id=>ANIMALES.find(a=>a.id===id);
+
+/* Fechas: próximos 7 días a partir de mañana; el sábado está lleno (escenario «sin cupo») */
+const DS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'], MS=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const DL=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+function dias(){const r=[],h=new Date();for(let i=1;i<=7;i++){const d=new Date(h.getFullYear(),h.getMonth(),h.getDate()+i);r.push({i,d,corto:DS[d.getDay()],num:d.getDate(),mes:MS[d.getMonth()],largo:`${DL[d.getDay()]} ${d.getDate()} de ${MS[d.getMonth()]}`})}return r}
+const HORAS=['9:00 a. m.','10:30 a. m.','3:00 p. m.','4:30 p. m.'];
+function cupos(dia,animal){ if(dia.d.getDay()===6) return [0,0,0,0];
+ const seed=(dia.i*7+animal.id.length*3)%5, base=[[3,1,0,2],[2,0,3,1],[0,2,1,3],[1,3,2,0],[3,0,2,2]];return base[seed]; }
+function alternativas(animal,excluirDia){const out=[];for(const d of dias()){const c=cupos(d,animal);c.forEach((n,h)=>{if(n>0&&out.length<3&&!(d.i===excluirDia&&false))out.push({dia:d.i,hora:h,n,d})});if(out.length>=3)break}return out}
+
+/* =========================================================
+   ESTADO DEL PROTOTIPO
+   ========================================================= */
+const ESTADO0=()=>({usuario:{nombre:'Laura',correo:'laura@correo.com',especie:'ambos',tamanos:['pequeño','mediano']},
+ checkin:{animo:null,causas:[]},cola:[],idx:0,animal:null,origen:'match',reserva:{dia:null,hora:null},guiaLeida:false,recordatorio:true,
+ reservas:[],favoritos:[],textoGrande:false,
+ demo:{primerEncuentro:true,falloRed:false,sinAnimales:false},falloUsado:false});
+let S=ESTADO0();
+try{const g=sessionStorage.getItem('huella');if(g)S=Object.assign(ESTADO0(),JSON.parse(g))}catch(e){}
+const guardar=()=>{try{sessionStorage.setItem('huella',JSON.stringify(S))}catch(e){}};
+
+/* Algoritmo de match: filtra por preferencias y ordena por cercanía al ánimo y a las causas */
+function calcularMatch(){
+ const m=S.checkin.animo||3, objetivo=m<=2?1:m===3?2:3, causas=S.checkin.causas, u=S.usuario;
+ return ANIMALES.filter(a=>(u.especie==='ambos'||a.especie===u.especie)&&u.tamanos.includes(a.tamano))
+  .map(a=>{let p=-Math.abs(a.energia-objetivo)*2;if(causas.includes('Soledad')&&a.sociable)p+=1.5;if(causas.includes('Sueño')&&a.energia===1)p+=1;return{a,p}})
+  .sort((x,y)=>y.p-x.p).map(x=>x.a.id);
+}
+function razones(a){
+ const m=S.checkin.animo||3, r=[], c=S.checkin.causas, N=a.nombre;
+ if(m<=2) r.push(`Hoy marcaste «${ANIMOS[m-1]}». ${N} es de energía baja: el plan es ${a.especie==='gato'?'acompañar'+lo(a)+' sin prisa':'caminar despacio'}, sin exigencias.`);
+ else if(m===3) r.push(`Con un día «Regular», un plan suave pero activo ayuda a despejarse. ${N} va a tu ritmo.`);
+ else r.push(`Tienes buena energía hoy y ${N} también: ${a.energia>=3?'le encanta correr y jugar':'disfruta un paseo largo'}.`);
+ if(c.includes('Soledad')) r.push(a.sociable?`Mencionaste soledad: ${N} es muy ${a.sexo==='f'?'sociable y cariñosa':'sociable y cariñoso'}, y hay voluntarios acompañando.`:`Mencionaste soledad: también puedes unirte a un paseo en manada con otras personas.`);
+ if(c.includes('Sueño')) r.push('Dormiste poco: el encuentro dura 45 minutos y no necesitas preparar nada.');
+ if(c.includes('Parciales o estudio')||c.includes('Trabajo')) r.push('Para despejarte de las entregas: 45 minutos al aire libre y sin pantallas.');
+ if(c.includes('Dinero')) r.push('El encuentro es gratuito.');
+ if(!S.usuario.tamanos.includes('grande')&&a.especie==='perro') r.push(`Es de tamaño ${a.tamano}: no te sugerimos perros grandes, como indicaste.`);
+ r.push(`Está a ${String(a.km).replace('.',',')} km, en ${a.refugio} (${a.barrio}).`);
+ return r.slice(0,3);
+}
+
+/* =========================================================
+   COMPONENTES REUTILIZABLES (funciones que devuelven HTML)
+   ========================================================= */
+const C={
+ boton:(txt,{tipo='primario',icono,attrs='',bloque=false,sm=false}={})=>`<button type="button" class="btn btn-${tipo}${bloque?' btn-bloque':''}${sm?' btn-sm':''}" ${attrs}>${icono?ic(icono,20):''}<span>${txt}</span></button>`,
+ alerta:(tipo,titulo,texto,extra='')=>{const icn={info:'info',exito:'check',error:'alert',aviso:'alert'}[tipo];
+   return `<div class="alerta alerta-${tipo}" ${tipo==='error'?'role="alert"':''}>${ic(icn,22)}<div><strong>${titulo}</strong>${texto?`<p>${texto}</p>`:''}${extra}</div></div>`},
+ vacio:(titulo,texto,accion='',icono='paw')=>`<div class="vacio"><div class="ilus">${ic(icono,44)}</div><h2 class="t-h3">${titulo}</h2><p class="t-muted" style="margin:6px auto 16px;max-width:36ch">${texto}</p>${accion}</div>`,
+ tag:t=>`<span class="tag">${t}</span>`,
+ tarjetaAnimal:(a,attrs='')=>`<button type="button" class="animal-card" ${attrs}>${`<div class="avatar">${mascota(a,72)}</div>`}<div class="stack-sm" style="flex:1;min-width:0"><div class="nombre">${a.nombre} <span class="t-small t-muted" style="font-family:var(--f-texto);font-weight:600">· ${a.edad}</span></div><div class="dato">${ic('pin',16)}${a.refugio} · ${String(a.km).replace('.',',')} km</div><div class="chips">${a.tags.slice(0,2).map(C.tag).join('')}</div></div>${ic('next',20)}</button>`,
+ pasos:(n,total,txt)=>`<div class="pasos"><span class="txt">Paso ${n} de ${total}<span class="t-muted" style="font-weight:600"> · ${txt}</span></span><ol aria-hidden="true">${Array.from({length:total},(_,i)=>`<li class="${i+1<n?'hecho':i+1===n?'actual':''}"></li>`).join('')}</ol></div>`,
+ tarjetaEncuentro:(r,acciones=true,nivel=2)=>{const a=byId(r.animal),d=dias().find(x=>x.i===r.dia)||dias()[0];
+   return `<article class="card" aria-labelledby="enc-${r.id}"><div class="encuentro"><div class="avatar">${mascota(a,64)}</div><div class="stack-sm"><div class="row wrap" style="gap:8px"><h${nivel} class="t-h3" id="enc-${r.id}">${a.especie==='gato'?'Visita':'Paseo'} con ${a.nombre}</h${nivel}><span class="badge badge-exito">${ic('check',14)}Confirmado</span></div>
+   <div class="dato">${ic('calendar',18)}<span style="text-transform:capitalize">${d.largo}</span> · ${HORAS[r.hora]}</div><div class="dato">${ic('pin',18)}${a.refugio} · ${a.barrio}</div></div></div>
+   ${acciones?`<div class="row wrap" style="margin-top:16px;gap:8px">${C.boton('Reprogramar',{tipo:'secundario',icono:'refresh',sm:true,attrs:`data-reprogramar="${r.id}"`})}${C.boton('Cancelar reserva',{tipo:'texto',attrs:`data-cancelar="${r.id}"`})}</div>`:''}</article>`}
+};
+
+/* =========================================================
+   NAVEGACIÓN Y ENCABEZADOS
+   ========================================================= */
+const TABS=[['inicio','Inicio','home'],['explorar','Explorar','compass'],['checkin','Match','plus'],['encuentros','Encuentros','calendar'],['huella','Mi huella','paw']];
+const SECCION={inicio:'inicio',explorar:'explorar',animal:'explorar',encuentros:'encuentros',huella:'huella',perfil:'perfil'};
+function pintarNav(ruta){
+ const act=SECCION[ruta];
+ document.getElementById('tabbar').innerHTML=`<ul>${TABS.map(([r,l,i])=>r==='checkin'
+  ?`<li><a class="tab tab-match" href="#checkin" aria-label="Match: contar cómo me siento"><span class="fab">${ic('plus',28)}</span><span class="lbl">Match</span></a></li>`
+  :`<li><a class="tab" href="#${r}" ${act===r?'aria-current="page"':''}>${ic(i,24)}<span class="lbl">${l}</span></a></li>`).join('')}</ul>`;
+ document.getElementById('sidebar').innerHTML=`<a class="logo" href="#inicio">${ic('paw',30)}Huella</a>
+  <a class="btn btn-primario btn-bloque" href="#checkin">${ic('plus',20)}Nuevo match</a>
+  <nav aria-label="Secciones"><ul>${[...TABS.filter(t=>t[0]!=='checkin'),['perfil','Perfil','user']].map(([r,l,i])=>`<li><a class="side-link" href="#${r}" ${act===r?'aria-current="page"':''}>${ic(i,22)}${l}</a></li>`).join('')}</ul></nav>
+  <p class="pie">Huella no reemplaza la atención psicológica. Si lo necesitas, toca «Ayuda».</p>`;
+}
+const BTN_AYUDA=`<button type="button" class="btn-ayuda" data-ayuda>${ic('help',20)}Ayuda</button>`;
+function cabecera(t){
+ const top=document.getElementById('topbar');
+ if(t.flujo){
+  top.innerHTML=`<div class="topbar-in"><button type="button" class="icon-btn" data-atras aria-label="Atrás">${ic('back',26)}</button>${t.flujo}${BTN_AYUDA}</div>`;
+ } else if(t.simple){
+  top.innerHTML=`<div class="topbar-in">${t.atras?`<button type="button" class="icon-btn" data-atras aria-label="Atrás">${ic('back',26)}</button>`:`<span class="row marca-top" style="font-family:var(--f-display);font-weight:800;font-size:1.25rem;color:var(--c-bosque)"><span style="color:var(--c-acento)">${ic('paw',26)}</span>Huella</span>`}<span class="titulo">${t.titulo||''}</span>${BTN_AYUDA}</div>`;
+ } else {
+  top.innerHTML=`<div class="topbar-in"><button type="button" class="avatar-btn" data-ir="perfil" aria-label="Perfil de ${esc(S.usuario.nombre)}">${esc(S.usuario.nombre[0]||'?').toUpperCase()}</button><span class="titulo" aria-hidden="true">${t.titulo}</span>${BTN_AYUDA}</div>`;
+ }
+}
+
+/* =========================================================
+   PANTALLAS
+   ========================================================= */
+const V={};
+let token=0;
+
+V.bienvenida=()=>({titulo:'Bienvenida',simple:true,sinNav:true,html:`
+<div class="bienvenida">
+ <div class="hero-bienvenida">
+  <h1 class="marca">Huella</h1>
+  <p style="font-size:1.125rem;margin-top:8px">Cuéntanos cómo te sientes y te proponemos un paseo o una visita con un animal de refugio que también necesita compañía.</p>
+ </div>
+ <div class="stack-lg" style="padding:8px 4px">
+  <ul class="beneficios">
+   <li>${ic('clock',24)}<span><strong>Check-in en menos de un minuto.</strong> Tres toques, sin formularios largos.</span></li>
+   <li>${ic('shield',24)}<span><strong>Refugios verificados.</strong> Siempre te acompaña un voluntario.</span></li>
+   <li>${ic('lock',24)}<span><strong>Tu ánimo es privado.</strong> Solo tú lo ves; los refugios solo ven tu reserva.</span></li>
+  </ul>
+  <div class="stack-sm">${C.boton('Crear mi cuenta',{bloque:true,attrs:'data-ir="registro"'})}${C.boton('Ya tengo cuenta',{tipo:'secundario',bloque:true,attrs:'data-ir="inicio"'})}</div>
+  <p class="t-small t-muted">Huella no reemplaza la atención psicológica. Si estás pasando un mal momento, toca «Ayuda» arriba a la derecha.</p>
+  <p class="t-small"><a href="#proyecto">Información del proyecto, tablero y sistema de diseño</a></p>
+ </div>
+</div>`});
+
+V.registro=()=>({titulo:'Crear cuenta',simple:true,atras:true,sinNav:true,html:`
+<div class="estrecho" style="margin:0 auto">
+<h1 tabindex="-1">Cuéntanos un poco de ti</h1>
+<p class="t-muted" style="margin-top:6px">Un minuto. Con esto te sugerimos animales con los que te sientas a gusto.</p>
+<form id="f-registro" class="stack-lg" style="margin-top:24px" novalidate>
+ <div id="reg-resumen"></div>
+ <div class="campo"><label for="r-nombre">¿Cómo te llamas?</label><input class="input" id="r-nombre" name="nombre" autocomplete="given-name" aria-describedby="r-nombre-err"><div id="r-nombre-err"></div></div>
+ <div class="campo"><label for="r-correo">Correo electrónico</label><span class="ayuda" id="r-correo-ay">Lo usamos para enviarte la confirmación de tus encuentros.</span><input class="input" id="r-correo" name="correo" type="email" autocomplete="email" inputmode="email" aria-describedby="r-correo-ay r-correo-err"><div id="r-correo-err"></div></div>
+ <fieldset><legend>Prefiero encontrarme con</legend><div class="chips">${['perros','gatos','ambos'].map(v=>`<label class="chip-sel"><input type="radio" name="especie" value="${v}" ${v==='ambos'?'checked':''}><span>${ic('check',16,'','chk')}${v[0].toUpperCase()+v.slice(1)}</span></label>`).join('')}</div></fieldset>
+ <fieldset aria-describedby="r-tam-err"><legend>Tamaños con los que me siento cómodo/a</legend><div class="chips">${['pequeño','mediano','grande'].map(v=>`<label class="chip-sel"><input type="checkbox" name="tamano" value="${v}" ${v!=='grande'?'checked':''}><span>${ic('check',16,'','chk')}${v[0].toUpperCase()+v.slice(1)}</span></label>`).join('')}</div><div id="r-tam-err" style="margin-top:6px"></div></fieldset>
+ ${C.alerta('info','Privacidad por defecto','Tu ánimo y tus notas solo los ves tú. Los refugios ven tu nombre y la reserva, nada más.')}
+ <label class="check"><input type="checkbox" id="r-acepto" aria-describedby="r-acepto-err"><span>Acepto el tratamiento de mis datos según la política de privacidad.</span></label><div id="r-acepto-err"></div>
+ <div class="flow-actions" style="position:static;margin:0;padding:0;border:0;background:none">${C.boton('Crear cuenta y continuar',{bloque:true,attrs:'type="submit" id="r-enviar"'}).replace('type="button" ','')}</div>
+</form></div>`,
+ despues(){
+  const f=document.getElementById('f-registro');
+  f.addEventListener('submit',ev=>{ev.preventDefault();
+   const nom=f.nombre.value.trim(), cor=f.correo.value.trim(), tams=[...f.querySelectorAll('[name=tamano]:checked')].map(x=>x.value), ok=document.getElementById('r-acepto').checked;
+   const errs=[];
+   const marcar=(id,errId,msg)=>{const el=document.getElementById(id);if(el)el.setAttribute('aria-invalid',msg?'true':'false');document.getElementById(errId).innerHTML=msg?`<p class="msg-error">${ic('alert',18)}${msg}</p>`:'';if(msg)errs.push([id,msg])};
+   marcar('r-nombre','r-nombre-err',nom?'':'Escribe tu nombre para saludarte. Basta con el primer nombre.');
+   marcar('r-correo','r-correo-err',!cor?'Escribe tu correo para enviarte las confirmaciones.':!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cor)?'Revisa el correo: debe tener la forma nombre@dominio.com.':'');
+   marcar(null,'r-tam-err',tams.length?'':'Elige al menos un tamaño.');
+   marcar('r-acepto','r-acepto-err',ok?'':'Para crear la cuenta necesitamos tu autorización.');
+   const res=document.getElementById('reg-resumen');
+   if(errs.length){res.innerHTML=C.alerta('error',`Revisa ${errs.length===1?'1 dato':errs.length+' datos'} antes de continuar`,'');
+     const primero=errs[0][0]?document.getElementById(errs[0][0]):f.querySelector('[name=tamano]');primero.focus();return}
+   S.usuario={nombre:nom,correo:cor,especie:f.especie.value,tamanos:tams};guardar();toast(`Cuenta creada. ¡Hola, ${esc(nom)}!`);ir('inicio');
+  });
+ }});
+
+V.inicio=()=>{const r=S.reservas[0], hoy=new Date(), ad=byId('canela');
+ return {titulo:'Inicio',html:`
+<p class="t-overline">${DL[hoy.getDay()]} ${hoy.getDate()} de ${MS[hoy.getMonth()]}</p>
+<h1 tabindex="-1" style="margin:4px 0 20px">Hola, ${esc(S.usuario.nombre)}</h1>
+<div class="grid-2">
+ <div class="stack-lg">
+  <section aria-labelledby="h-prox"><h2 id="h-prox" style="margin-bottom:12px">Próximo encuentro</h2>
+   ${r?C.tarjetaEncuentro(r,false,3).replace('</article>',`<div style="margin-top:12px">${C.boton('Ver mis encuentros',{tipo:'texto',icono:'next',attrs:'data-ir="encuentros"'})}</div></article>`)
+     :C.vacio('Aún no tienes encuentros','Haz tu check-in y te sugerimos un compañero según cómo te sientes hoy.',C.boton('Hacer check-in (1 min)',{icono:'plus',attrs:'data-ir="checkin"'}),'calendar')}
+  </section>
+  <section class="card" aria-labelledby="h-como"><h2 id="h-como">¿Cómo estás hoy?</h2><p class="t-small t-muted" style="margin:4px 0 12px">Toca una opción para empezar tu match.</p>
+   <div class="animo" role="group" aria-labelledby="h-como">${[1,2,3,4,5].map(m=>`<button type="button" class="animo-btn" data-animo-rapido="${m}">${cara(m,30)}<span class="num" aria-hidden="true">${m}</span><span>${ANIMOS[m-1]}</span></button>`).join('')}</div>
+  </section>
+ </div>
+ <div class="stack-lg">
+  <section aria-labelledby="h-dia"><h2 id="h-dia" style="margin-bottom:12px">Animal del día</h2>${C.tarjetaAnimal(ad,'data-ver="canela"')}</section>
+  <section class="card" aria-labelledby="h-huella"><div class="card-head"><h2 id="h-huella">Tu huella este mes</h2><span class="badge badge-info">${ic('lock',14)}Privado</span></div>
+   ${S.reservas.length?`<p>Tienes <strong>${S.reservas.length} encuentro${S.reservas.length>1?'s':''}</strong> por delante. Después de cada uno te preguntaremos cómo te sientes para mostrarte el antes y el después.</p>`
+    :`<div class="mini-barras" aria-hidden="true">${'<i style="height:30%"></i><i style="height:55%"></i><i style="height:40%"></i><i style="height:70%"></i>'}</div><p class="t-small t-muted" style="margin-top:10px">Después de tu primer encuentro verás aquí cómo cambia tu ánimo.</p>`}
+   <div style="margin-top:8px">${C.boton('Ver mi huella',{tipo:'texto',icono:'next',attrs:'data-ir="huella"'})}</div></section>
+ </div>
+</div>`,
+ despues(){document.querySelectorAll('[data-animo-rapido]').forEach(x=>x.addEventListener('click',()=>{S.checkin={animo:+x.dataset.animoRapido,causas:[]};guardar();ir('checkin')}))}}};
+
+V.checkin=()=>({titulo:'Check-in',flujo:C.pasos(1,4,'Cómo te sientes'),enFlujo:true,html:`
+<div class="estrecho" style="margin:0 auto">
+<h1 tabindex="-1">¿Cómo te sientes hoy?</h1>
+<p class="t-muted" style="margin-top:6px">Es privado: solo tú lo ves. Lo usamos para sugerirte un compañero.</p>
+<form id="f-checkin" class="stack-lg" style="margin-top:24px" novalidate>
+ <fieldset aria-describedby="ck-err"><legend class="sr-only">Tu ánimo de hoy, de 1 (muy mal) a 5 (muy bien)</legend>
+  <div class="animo">${[1,2,3,4,5].map(m=>`<label><input type="radio" name="animo" value="${m}" ${S.checkin.animo===m?'checked':''}>${cara(m)}<span class="num">${m}</span><span>${ANIMOS[m-1]}</span></label>`).join('')}</div>
+  <div id="ck-err" style="margin-top:8px"></div>
+ </fieldset>
+ <fieldset><legend>¿Qué lo está causando? <span class="t-muted" style="font-weight:600">(opcional, puedes elegir varias)</span></legend>
+  <div class="chips">${CAUSAS.map(c=>`<label class="chip-sel"><input type="checkbox" name="causa" value="${c}" ${S.checkin.causas.includes(c)?'checked':''}><span>${ic('check',16,'','chk')}${c}</span></label>`).join('')}</div>
+ </fieldset>
+ <div class="flow-actions">${C.boton('Ver mi match',{attrs:'type="submit"'}).replace('type="button" ','')}</div>
+</form></div>`,
+ despues(){const f=document.getElementById('f-checkin');
+  f.addEventListener('change',()=>{const a=f.querySelector('[name=animo]:checked');if(a)document.getElementById('ck-err').innerHTML=''});
+  f.addEventListener('submit',ev=>{ev.preventDefault();const a=f.querySelector('[name=animo]:checked');
+   if(!a){document.getElementById('ck-err').innerHTML=`<p class="msg-error" role="alert">${ic('alert',18)}Elige cómo te sientes (de 1 a 5) para buscar tu match.</p>`;f.querySelector('[name=animo]').focus();return}
+   S.checkin={animo:+a.value,causas:[...f.querySelectorAll('[name=causa]:checked')].map(x=>x.value)};S.cola=calcularMatch();S.idx=0;S.origen='match';guardar();
+   ir(S.checkin.animo===1?'apoyo':'match');});
+ }});
+
+V.apoyo=()=>({titulo:'Apoyo',flujo:C.pasos(1,4,'Cómo te sientes'),enFlujo:true,html:`
+<div class="estrecho stack-lg" style="margin:0 auto">
+ <div><h1 tabindex="-1">Gracias por contarnos cómo estás</h1>
+ <p style="margin-top:8px">Un paseo puede ayudar, pero hoy quizá te sirva más hablar con alguien. Estas líneas son gratuitas y atienden las 24 horas.</p></div>
+ <section aria-labelledby="h-lineas" class="stack-sm"><h2 id="h-lineas">Líneas de apoyo gratuitas</h2>${lineasApoyo()}</section>
+ <div class="card-plana stack-sm"><h2>Hablar con un psicólogo</h2><p class="t-muted">Te ayudamos a pedir una cita con un profesional aliado o con el bienestar de tu universidad.</p>${C.boton('Pedir una cita',{tipo:'secundario',icono:'calendar',attrs:'data-cita'})}</div>
+ <p class="t-small t-muted">Huella no reemplaza la atención psicológica. Si estás en peligro inmediato, llama al 123.</p>
+ <div class="flow-actions">${C.boton('Ir al inicio',{tipo:'texto',attrs:'data-ir="inicio"'})}${C.boton('Seguir con mi match',{tipo:'secundario',attrs:'data-ir="match"'})}</div>
+</div>`});
+
+function lineasApoyo(){return `<div class="grid-cards lineas" style="grid-template-columns:1fr">
+ <div class="card-plana"><div class="row" style="align-items:flex-start"><span style="color:var(--c-primario)">${ic('phone',28)}</span><div class="stack-sm"><h3>Línea 106 · «El poder de ser escuchado»</h3><p class="t-small t-muted">Secretaría Distrital de Salud de Bogotá. Escucha y apoyo psicológico, 24 horas.</p>
+  <div class="row wrap"><a class="btn btn-primario btn-sm" href="tel:106">${ic('phone',18)}Llamar al 106</a><span class="t-small">WhatsApp: <strong>300 754 8933</strong></span></div></div></div></div>
+ <div class="card-plana"><div class="row" style="align-items:flex-start"><span style="color:var(--c-error)">${ic('alert',28)}</span><div class="stack-sm"><h3>Línea 123 · Emergencias</h3><p class="t-small t-muted">Si tú u otra persona están en peligro inmediato.</p><a class="btn btn-secundario btn-sm" href="tel:123">${ic('phone',18)}Llamar al 123</a></div></div></div>
+</div>`}
+
+V.match=()=>{
+ const t=++token;
+ if(!S.checkin.animo){S.checkin={animo:2,causas:[]};}
+ if(!S.cola.length){S.cola=calcularMatch();S.idx=0}
+ setTimeout(()=>{if(t===token&&ruta()==='match')pintarMatch()},1100);
+ return {titulo:'Tu match',flujo:C.pasos(2,4,'Tu match'),enFlujo:true,html:`
+ <div class="flujo-wrap" style="margin:0 auto" aria-busy="true">
+  <h1 tabindex="-1">Buscando un compañero para hoy…</h1>
+  <p class="t-muted" style="margin:6px 0 20px" role="status">Estamos cruzando tu ánimo con el temperamento de los animales disponibles.</p>
+  <div class="cargando"><span class="spinner oscuro" aria-hidden="true"></span><span>Cargando sugerencia…</span></div>
+ </div>`}};
+
+function pintarMatch(){
+ const main=document.getElementById('main');
+ if(S.demo.sinAnimales||!S.cola.length){
+  main.innerHTML=`<div class="estrecho" style="margin:0 auto"><h1 tabindex="-1">Hoy no hay animales disponibles cerca</h1><p class="t-muted" style="margin:6px 0 20px">Los refugios cercanos ya completaron sus cupos de hoy. No es un error: vuelve mañana o explora otros refugios.</p>
+  ${C.vacio('Sin cupos por ahora','Te avisamos en cuanto un refugio abra nuevos cupos para tu perfil.',`<div class="row wrap" style="justify-content:center">${C.boton('Avisarme',{tipo:'secundario',icono:'bell',attrs:'data-avisar'})}${C.boton('Explorar animales',{icono:'compass',attrs:'data-ir="explorar"'})}</div>`)}</div>`;
+  enfocarTitulo();anunciar('Sin animales disponibles hoy');return;}
+ if(S.idx>=S.cola.length){
+  main.innerHTML=`<div class="estrecho" style="margin:0 auto"><h1 tabindex="-1">Ya viste todas las sugerencias de hoy</h1><p class="t-muted" style="margin:6px 0 20px">Son ${S.cola.length} animales compatibles con tus preferencias.</p>
+  ${C.vacio('¿Volvemos a empezar?','Puedes revisar de nuevo las sugerencias o ver todos los animales en Explorar.',`<div class="row wrap" style="justify-content:center">${C.boton('Ver desde la primera',{tipo:'secundario',icono:'refresh',attrs:'data-reiniciar-cola'})}${C.boton('Explorar animales',{icono:'compass',attrs:'data-ir="explorar"'})}</div>`)}</div>`;
+  enfocarTitulo();return;}
+ const a=byId(S.cola[S.idx]);S.animal=a.id;guardar();
+ main.innerHTML=`<div class="flujo-wrap" style="margin:0 auto">
+ <p class="t-overline">Sugerencia ${S.idx+1} de ${S.cola.length}</p>
+ <div class="grid-2" style="margin-top:8px">
+  <div class="hero-animal" style="background:${a.colores.fondo}">${mascota(a,160)}</div>
+  <div class="stack-lg">
+   <div><h1 tabindex="-1">${a.nombre} <span class="t-muted" style="font-family:var(--f-texto);font-size:1.125rem;font-weight:600">· ${a.edad}</span></h1>
+   <p class="dato" style="margin-top:6px">${ic('pin',18)}${a.refugio} · ${a.barrio} · ${String(a.km).replace('.',',')} km</p></div>
+   <div><h2 class="sr-only">Temperamento</h2><div class="chips">${a.tags.map(C.tag).join('')}</div></div>
+   <section class="card" aria-labelledby="h-porque" style="padding:20px"><h2 id="h-porque">Por qué te ${lo(a)} sugerimos</h2>
+    <ul style="margin:10px 0 0;padding-left:20px" class="stack-sm">${razones(a).map(x=>`<li>${x}</li>`).join('')}</ul></section>
+   <p class="dato">${ic(a.especie==='gato'?'clock':'walk',18)}${TIPO_L(a)}</p>
+  </div>
+ </div>
+ <div class="flow-actions">${C.boton('Ver otro',{tipo:'secundario',icono:'refresh',attrs:'data-otro'})}${C.boton('Elegir horario',{icono:'calendar',attrs:'data-ir="horario"'})}</div></div>`;
+ enfocarTitulo();anunciar(`Tu match es ${a.nombre}`);
+}
+
+V.horario=()=>{
+ const a=byId(S.animal)||byId('toby');S.animal=a.id;
+ const ds=dias();
+ if(S.reserva.dia==null||!ds.find(d=>d.i===S.reserva.dia)){const p=ds.find(d=>cupos(d,a).some(n=>n>0));S.reserva={dia:p.i,hora:null}}
+ const desdeExplorar=S.origen!=='match';
+ return {titulo:'Horario',flujo:desdeExplorar?C.pasos(1,2,'Horario'):C.pasos(3,4,'Horario'),enFlujo:true,html:`
+<div class="flujo-wrap" id="horario-wrap" style="margin:0 auto">
+ <h1 tabindex="-1">¿Cuándo quieres ver a ${a.nombre}?</h1>
+ <p class="t-muted" style="margin:6px 0 20px">${TIPO_L(a)} en ${a.refugio}. Los cupos se actualizan en tiempo real.</p>
+ <div class="grid-2 ancho-izq">
+  <form id="f-horario" class="stack-lg" novalidate>
+   <fieldset><legend>Día</legend><div class="dias" id="dias">${ds.map(d=>{const lleno=cupos(d,a).every(n=>n===0);return `<label class="dia"><input type="radio" name="dia" value="${d.i}" ${S.reserva.dia===d.i?'checked':''}><span>${d.corto}<b>${d.num}</b>${lleno?'<span class="lleno">Sin cupos</span>':d.mes}</span></label>`}).join('')}</div></fieldset>
+   <fieldset aria-describedby="h-err"><legend>Hora</legend><div id="franjas"></div><div id="h-alt" style="margin-top:12px"></div><div id="h-err" style="margin-top:8px"></div></fieldset>
+  </form>
+  <aside class="card stack-sm" aria-label="Resumen de la reserva"><div class="row">${mascota(a,56)}<div><h2>${a.nombre}</h2><p class="t-small t-muted">${a.refugio}</p></div></div><div id="resumen-h" class="stack-sm" style="margin-top:8px"></div></aside>
+ </div>
+ <div class="flow-actions">${C.boton('Continuar',{icono:'next',attrs:'data-continuar-horario'})}</div>
+</div>`,
+ despues(){
+  const f=document.getElementById('f-horario');
+  const pintar=()=>{const d=ds.find(x=>x.i===S.reserva.dia),c=cupos(d,a);
+   document.getElementById('franjas').innerHTML=c.every(n=>n===0)?C.alerta('aviso',`El ${d.largo} ya no tiene cupos`,'Los sábados se llenan rápido. Estas franjas cercanas sí tienen cupo:',altHTML(a,d.i))
+    :`<div class="franjas">${c.map((n,h)=>n>0?`<label class="franja"><input type="radio" name="hora" value="${h}" ${S.reserva.hora===h?'checked':''}><span class="caja"><span class="hora">${HORAS[h]}</span><span class="cupo ${n===1?'ultimo':''}">${n===1?'Último cupo':n+' cupos'}</span></span></label>`
+      :`<button type="button" class="franja-llena" data-llena="${h}" aria-label="${HORAS[h]}, sin cupo. Ver alternativas"><span class="hora">${HORAS[h]}</span><span class="cupo">Sin cupo</span></button>`).join('')}</div>`;
+   document.getElementById('h-alt').innerHTML='';resumen();};
+  const resumen=()=>{const d=ds.find(x=>x.i===S.reserva.dia);document.getElementById('resumen-h').innerHTML=`<p class="dato">${ic('calendar',18)}<span style="text-transform:capitalize">${d.largo}</span></p><p class="dato">${ic('clock',18)}${S.reserva.hora!=null?HORAS[S.reserva.hora]:'<em>Elige una hora</em>'}</p><p class="dato">${ic('pin',18)}${a.barrio} · entrada principal del refugio</p>`};
+  f.addEventListener('change',e=>{if(e.target.name==='dia'){S.reserva={dia:+e.target.value,hora:null};pintar()}if(e.target.name==='hora'){S.reserva.hora=+e.target.value;document.getElementById('h-err').innerHTML='';resumen()}guardar()});
+  document.getElementById('horario-wrap').addEventListener('click',e=>{const b=e.target.closest('[data-llena]');if(b){document.getElementById('h-alt').innerHTML=C.alerta('aviso',`Las ${HORAS[+b.dataset.llena]} ya están llenas`,'No te preocupes, estas franjas sí tienen cupo:',altHTML(a,S.reserva.dia,+b.dataset.llena));document.querySelector('#h-alt .alerta').setAttribute('tabindex','-1');document.querySelector('#h-alt .alerta').focus()}
+   const al=e.target.closest('[data-alt]');if(al){const[di,h]=al.dataset.alt.split('-').map(Number);S.reserva={dia:di,hora:h};guardar();f.querySelector(`[name=dia][value="${di}"]`).checked=true;pintar();const r=f.querySelector(`[name=hora][value="${h}"]`);r.checked=true;r.focus();resumen();anunciar('Franja seleccionada: '+HORAS[h])}});
+  pintar();
+ }}};
+function altHTML(a,dia,horaLlena){const alts=[];for(const d of dias())cupos(d,a).forEach((n,h)=>{if(n>0)alts.push({d,h,n,dist:Math.abs(d.i-dia)*10+Math.abs(h-(horaLlena??h))})});alts.sort((x,y)=>x.dist-y.dist||x.d.i-y.d.i);alts.splice(3);alts.sort((x,y)=>x.d.i-y.d.i||x.h-y.h);
+ return `<div class="row wrap" style="margin-top:10px;gap:8px">${alts.map(x=>`<button type="button" class="btn btn-secundario btn-sm" data-alt="${x.d.i}-${x.h}"><span style="text-transform:capitalize">${x.d.corto} ${x.d.num}</span> · ${HORAS[x.h]}</button>`).join('')}</div>`}
+
+V.confirmar=()=>{
+ const a=byId(S.animal)||byId('toby'),ds=dias();if(S.reserva.hora==null){S.reserva={dia:ds[0].i,hora:cupos(ds[0],a).findIndex(n=>n>0)}}
+ const d=ds.find(x=>x.i===S.reserva.dia),desdeExplorar=S.origen!=='match',primera=S.demo.primerEncuentro;
+ return {titulo:'Confirmar',flujo:desdeExplorar?C.pasos(2,2,'Confirmar'):C.pasos(4,4,'Confirmar'),enFlujo:true,html:`
+<div class="flujo-wrap" style="margin:0 auto">
+ <h1 tabindex="-1">Revisa y confirma</h1>
+ <p class="t-muted" style="margin:6px 0 20px">Puedes cancelar o reprogramar hasta 3 horas antes, sin costo.</p>
+ <div id="conf-alerta" tabindex="-1"></div>
+ <div class="grid-2">
+  <section class="card stack" aria-labelledby="h-res"><h2 id="h-res">Tu reserva</h2>
+   <div class="row">${mascota(a,72)}<div><p class="t-h3" style="font-family:var(--f-display);font-weight:800">${a.especie==='gato'?'Visita':'Paseo'} con ${a.nombre}</p><p class="t-small t-muted">${TIPO_L(a)}</p></div></div>
+   <p class="dato">${ic('calendar',18)}<span style="text-transform:capitalize">${d.largo}</span></p><p class="dato">${ic('clock',18)}${HORAS[S.reserva.hora]}</p><p class="dato">${ic('pin',18)}${a.refugio} · ${a.barrio} · entrada principal</p><p class="dato">${ic('users',18)}Te acompaña un voluntario del refugio</p>
+   <label class="switch"><span><strong>Recordatorio</strong><br><span class="t-small t-muted">El día anterior a las 7:00 p. m.</span></span><input type="checkbox" role="switch" id="c-rec" ${S.recordatorio?'checked':''}></label>
+  </section>
+  ${primera?`<section class="card stack" aria-labelledby="h-guia" style="border-color:var(--c-acento)"><div class="card-head" style="margin:0"><h2 id="h-guia">${GUIA(a)}</h2><span class="badge badge-aviso">${ic('info',14)}Obligatoria</span></div>
+   <p>Es tu primer encuentro. Lee esta guía corta (2 minutos) para saber qué esperar y cómo cuidar${lo(a)}.</p>
+   ${C.boton('Leer la guía',{tipo:'secundario',icono:'book',attrs:'data-guia'})}
+   <label class="check"><input type="checkbox" id="c-guia" aria-describedby="c-guia-err" ${S.guiaLeida?'checked':''}><span>Leí la ${GUIA(a).toLowerCase()}</span></label><div id="c-guia-err"></div>
+  </section>`:`<section class="card-plana">${C.alerta('info','Ya conoces cómo funciona','Como no es tu primer encuentro, la guía es opcional.',`<p style="margin-top:8px">${C.boton('Repasar la guía',{tipo:'texto',attrs:'data-guia'})}</p>`)}</section>`}
+ </div>
+ <div class="flow-actions">${primera&&!S.guiaLeida?`<p class="pendiente" id="pendiente">${ic('info',18)}Antes de confirmar: lee la guía del primer paseo.</p>`:''}${C.boton('Confirmar reserva',{icono:'check',attrs:'id="c-confirmar" aria-describedby="pendiente"'})}</div>
+</div>`,
+ despues(){
+  document.getElementById('c-rec').addEventListener('change',e=>{S.recordatorio=e.target.checked;guardar();anunciar(e.target.checked?'Recordatorio activado':'Recordatorio desactivado')});
+  const g=document.getElementById('c-guia');if(g)g.addEventListener('change',()=>{S.guiaLeida=g.checked;const pe=document.getElementById('pendiente');if(pe)pe.hidden=g.checked;g.removeAttribute('aria-invalid');document.getElementById('c-guia-err').innerHTML='';guardar()});
+  document.getElementById('c-confirmar').addEventListener('click',confirmarReserva);
+ }}};
+
+function confirmarReserva(){
+ const btn=document.getElementById('c-confirmar'),g=document.getElementById('c-guia');
+ if(S.demo.primerEncuentro&&g&&!g.checked){g.setAttribute('aria-invalid','true');document.getElementById('c-guia-err').innerHTML=`<p class="msg-error" role="alert">${ic('alert',18)}Lee la guía y marca la casilla antes de confirmar: así sabrás qué esperar.</p>`;g.focus();return}
+ btn.setAttribute('aria-busy','true');btn.innerHTML='<span class="spinner" aria-hidden="true"></span><span>Confirmando…</span>';anunciar('Confirmando tu reserva');
+ document.getElementById('conf-alerta').innerHTML='';
+ const t=++token;
+ setTimeout(()=>{if(t!==token)return;
+  if(S.demo.falloRed&&!S.falloUsado){S.falloUsado=true;guardar();
+   btn.removeAttribute('aria-busy');btn.innerHTML=`${ic('refresh',20)}<span>Reintentar</span>`;
+   const al=document.getElementById('conf-alerta');al.innerHTML=C.alerta('error','No pudimos confirmar tu reserva','Parece que se perdió la conexión. Tu horario queda apartado 10 minutos: revisa tu internet y toca «Reintentar».')+'<div style="height:16px"></div>';al.focus();return}
+  const a=byId(S.animal),id='r'+Date.now();
+  if(S.reprogramando){S.reservas=S.reservas.filter(r=>r.id!==S.reprogramando);S.reprogramando=null}
+  S.reservas.unshift({id,animal:a.id,dia:S.reserva.dia,hora:S.reserva.hora,tipo:TIPO(a)});S.ultima=id;S.demo.primerEncuentro=false;S.falloUsado=false;guardar();ir('listo');
+ },1200);
+}
+
+V.listo=()=>{const r=S.reservas.find(x=>x.id===S.ultima)||S.reservas[0];if(!r)return V.inicio();const a=byId(r.animal),d=dias().find(x=>x.i===r.dia);
+ return {titulo:'Reserva lista',simple:true,html:`
+<div class="estrecho stack-lg" style="margin:0 auto;text-align:center">
+ <div style="width:96px;height:96px;border-radius:50%;background:var(--c-exito-suave);color:var(--c-exito);display:flex;align-items:center;justify-content:center;margin:8px auto 0">${ic('check',52)}</div>
+ <div><h1 tabindex="-1">¡Listo, ${esc(S.usuario.nombre)}! Tu ${a.especie==='gato'?'visita':'paseo'} con ${a.nombre} quedó reservad${a.especie==='gato'?'a':'o'}</h1>
+ <p class="t-muted" style="margin-top:8px">Te enviamos la confirmación a ${esc(S.usuario.correo)}.${S.recordatorio?' Te recordaremos el día anterior a las 7:00 p. m.':''}</p></div>
+ <div style="text-align:left">${C.tarjetaEncuentro(r,false)}</div>
+ ${C.alerta('info','Después del encuentro','Te preguntaremos cómo te sientes (10 segundos) para mostrarte tu antes y después en «Mi huella».')}
+ <div class="row wrap" style="justify-content:center">${C.boton('Volver al inicio',{tipo:'secundario',attrs:'data-ir="inicio"'})}${C.boton('Ver mis encuentros',{icono:'calendar',attrs:'data-ir="encuentros"'})}</div>
+</div>`}};
+
+V.encuentros=()=>({titulo:'Encuentros',html:`
+<h1 tabindex="-1" style="margin-bottom:6px">Mis encuentros</h1><p class="t-muted" style="margin-bottom:20px">Tus paseos y visitas reservados.</p>
+<div class="estrecho stack">${S.reservas.length?S.reservas.map(r=>C.tarjetaEncuentro(r)).join('')
+ :C.vacio('Todavía no tienes encuentros','Cuando reserves un paseo o una visita aparecerá aquí, con la opción de reprogramar o cancelar.',C.boton('Buscar mi match',{icono:'plus',attrs:'data-ir="checkin"'}),'calendar')}</div>`});
+
+V.explorar=()=>{const f=S.filtro||'todos';const lista=ANIMALES.filter(a=>f==='todos'||a.especie===f);
+ return {titulo:'Explorar',html:`
+<h1 tabindex="-1" style="margin-bottom:6px">Explorar</h1><p class="t-muted" style="margin-bottom:16px">Animales de refugios verificados cerca de ti.</p>
+<div class="row wrap" role="group" aria-label="Filtrar por especie" style="margin-bottom:16px;gap:8px">${[['todos','Todos'],['perro','Perros'],['gato','Gatos']].map(([v,l])=>`<button type="button" class="filtro" aria-pressed="${f===v}" data-filtro="${v}">${l}</button>`).join('')}</div>
+<p class="t-small t-muted" role="status" style="margin-bottom:12px">${lista.length} animales</p>
+<div class="grid-cards">${lista.map(a=>C.tarjetaAnimal(a,`data-ver="${a.id}"`)).join('')}</div>`}};
+
+V.animal=()=>{const a=byId(S.ver)||byId('toby'),fav=S.favoritos.includes(a.id);
+ return {titulo:a.nombre,simple:true,atras:true,html:`
+<div class="flujo-wrap" style="margin:0 auto"><div class="grid-2">
+ <div class="hero-animal" style="background:${a.colores.fondo}">${mascota(a,160)}</div>
+ <div class="stack-lg">
+  <div class="row" style="justify-content:space-between;align-items:flex-start"><div><h1 tabindex="-1">${a.nombre} <span class="t-muted" style="font-family:var(--f-texto);font-size:1.125rem;font-weight:600">· ${a.edad}</span></h1><p class="dato" style="margin-top:6px">${ic('pin',18)}${a.refugio} · ${a.barrio} · ${String(a.km).replace('.',',')} km</p></div>
+  <button type="button" class="icon-btn" data-fav="${a.id}" aria-pressed="${fav}" aria-label="Guardar a ${a.nombre} en favoritos" style="border:2px solid var(--c-borde);color:${fav?'var(--c-primario)':'var(--c-bosque)'}">${ic('heart',24,fav?'fill="currentColor"':'')}</button></div>
+  <div class="chips">${a.tags.map(C.tag).join('')}</div>
+  <section><h2 style="margin-bottom:6px">Su historia</h2><p>${a.historia}</p></section>
+  <p class="dato">${ic(a.especie==='gato'?'clock':'walk',18)}${TIPO_L(a)}</p>
+  <p class="t-small t-muted">La acogida y la adopción se solicitan desde aquí en una fase posterior (Could have).</p>
+ </div></div>
+ <div class="flow-actions">${C.boton(`Reservar ${TIPO(a)}`,{icono:'calendar',attrs:`data-reservar="${a.id}"`})}</div></div>`}};
+
+V.huella=()=>{const r=S.reservas[0];
+ return {titulo:'Mi huella',html:`
+<h1 tabindex="-1" style="margin-bottom:6px">Mi huella</h1><p class="t-muted row" style="margin-bottom:20px;gap:6px">${ic('lock',18)}Solo tú ves esta información.</p>
+<div class="estrecho stack-lg">
+ ${S.checkin.animo?`<section class="card"><h2 style="margin-bottom:8px">Check-in más reciente</h2><div class="row">${cara(S.checkin.animo,40)}<div><p><strong>${S.checkin.animo} · ${ANIMOS[S.checkin.animo-1]}</strong></p><p class="t-small t-muted">${S.checkin.causas.length?'Causas: '+S.checkin.causas.join(', '):'Sin causas marcadas'}</p></div></div></section>`:''}
+ ${r?C.alerta('info','Tu antes y después empieza pronto',`Después de tu ${r.tipo} con ${byId(r.animal).nombre} te preguntaremos cómo te sientes. Así verás cómo cambia tu ánimo con cada encuentro.`)
+   :C.vacio('Tu huella aparecerá aquí','Después de tu primer encuentro verás cómo cambia tu ánimo antes y después de cada paseo.',C.boton('Hacer check-in',{icono:'plus',attrs:'data-ir="checkin"'}))}
+ <section class="card-plana stack-sm"><h2>Apoyo profesional</h2><p class="t-muted">Si notas que tu ánimo no mejora, hablar con alguien puede ayudar.</p>${C.boton('Ver líneas de apoyo',{tipo:'secundario',icono:'phone',attrs:'data-ayuda'})}</section>
+</div>`}};
+
+V.perfil=()=>({titulo:'Perfil',html:`
+<h1 tabindex="-1" style="margin-bottom:20px">Perfil</h1>
+<form id="f-perfil" class="estrecho stack-lg" novalidate>
+ <section class="card stack"><h2>Tus datos</h2><div class="campo"><label for="p-nombre">Nombre</label><input class="input" id="p-nombre" value="${esc(S.usuario.nombre)}" autocomplete="given-name"></div><p class="t-small t-muted">${esc(S.usuario.correo)}</p></section>
+ <section class="card stack"><h2>Preferencias del match</h2>
+  <fieldset><legend>Prefiero encontrarme con</legend><div class="chips">${['perros','gatos','ambos'].map(v=>`<label class="chip-sel"><input type="radio" name="especie" value="${v==='perros'?'perro':v==='gatos'?'gato':'ambos'}" ${S.usuario.especie===(v==='perros'?'perro':v==='gatos'?'gato':'ambos')?'checked':''}><span>${ic('check',16,'','chk')}${v[0].toUpperCase()+v.slice(1)}</span></label>`).join('')}</div></fieldset>
+  <fieldset><legend>Tamaños</legend><div class="chips">${['pequeño','mediano','grande'].map(v=>`<label class="chip-sel"><input type="checkbox" name="tamano" value="${v}" ${S.usuario.tamanos.includes(v)?'checked':''}><span>${ic('check',16,'','chk')}${v[0].toUpperCase()+v.slice(1)}</span></label>`).join('')}</div></fieldset>
+ </section>
+ <section class="card"><h2 style="margin-bottom:8px">Accesibilidad y avisos</h2>
+  <label class="switch"><span><strong>Texto grande</strong><br><span class="t-small t-muted">Aumenta el tamaño de todos los textos un 15 %.</span></span><input type="checkbox" role="switch" id="p-texto" ${S.textoGrande?'checked':''}></label>
+  <label class="switch"><span><strong>Recordatorios</strong><br><span class="t-small t-muted">Un aviso el día anterior a cada encuentro.</span></span><input type="checkbox" role="switch" id="p-rec" ${S.recordatorio?'checked':''}></label>
+  <label class="switch"><span><strong>Mi ánimo es privado</strong><br><span class="t-small t-muted">Siempre activo: nadie más ve tus check-ins.</span></span><input type="checkbox" role="switch" checked disabled></label>
+ </section>
+ <div class="row wrap">${C.boton('Guardar cambios',{icono:'check',attrs:'type="submit"'}).replace('type="button" ','')}${C.boton('Cerrar sesión',{tipo:'texto',attrs:'data-ir="bienvenida"'})}</div>
+</form>`,
+ despues(){const f=document.getElementById('f-perfil');
+  document.getElementById('p-texto').addEventListener('change',e=>{S.textoGrande=e.target.checked;aplicarTexto();guardar();anunciar(e.target.checked?'Texto grande activado':'Texto grande desactivado')});
+  f.addEventListener('submit',e=>{e.preventDefault();const t=[...f.querySelectorAll('[name=tamano]:checked')].map(x=>x.value);
+   if(!t.length){toast('Elige al menos un tamaño','alert');f.querySelector('[name=tamano]').focus();return}
+   S.usuario.nombre=document.getElementById('p-nombre').value.trim()||S.usuario.nombre;S.usuario.especie=f.especie.value;S.usuario.tamanos=t;S.recordatorio=document.getElementById('p-rec').checked;S.cola=[];guardar();cabecera({titulo:'Perfil'});toast('Preferencias guardadas','check')});
+ }});
+
+/* =========================================================
+   DIÁLOGOS: ayuda, guía, cita, cancelar, controles del prototipo
+   ========================================================= */
+const dlg=document.getElementById('dlg');
+function abrirDialogo(titulo,cuerpo,pie='',clase=''){
+ dlg.className=clase;
+ dlg.innerHTML=`<div class="dlg-head"><h2 id="dlg-title">${titulo}</h2><button type="button" class="icon-btn" data-cerrar aria-label="Cerrar">${ic('close',24)}</button></div><div class="dlg-body">${cuerpo}</div>${pie?`<div class="dlg-foot">${pie}</div>`:''}`;
+ dlg.showModal();
+}
+dlg.addEventListener('click',e=>{if(e.target===dlg||e.target.closest('[data-cerrar]'))dlg.close()});
+function ayuda(){abrirDialogo('Ayuda',`<div class="stack-lg"><div><h3 style="margin-bottom:8px">¿Necesitas hablar con alguien?</h3>${lineasApoyo()}</div>
+ <div class="stack-sm"><h3>¿Cómo funciona Huella?</h3><ol style="margin:0;padding-left:20px" class="stack-sm"><li>Cuentas cómo te sientes (menos de un minuto).</li><li>Te sugerimos un animal compatible y te explicamos por qué.</li><li>Reservas un paseo o una visita con cupo disponible.</li><li>Después del encuentro ves tu antes y después.</li></ol></div>
+ <div class="stack-sm"><h3>Tu privacidad</h3><p class="t-muted">Tu ánimo solo lo ves tú. Los refugios ven tu nombre y la reserva.</p></div>
+ <p class="t-small t-muted">Huella no reemplaza la atención psicológica.</p></div>`)}
+function guia(){const a=byId(S.animal)||byId('toby'),gato=a.especie==='gato';
+ const items=gato?[['Qué llevar','Nada especial. El refugio te recibe y te presenta a '+a.nombre+'.'],['Cómo saludar','Siéntate a su altura y deja que se acerque. Ofrece la mano para que la huela antes de acariciar.'],['Si se esconde o bufa','Es normal al inicio. Dale espacio y háblale suave; el voluntario te orienta.'],['Al terminar','Te preguntaremos cómo te sientes (10 segundos) para tu antes y después.']]
+  :[['Qué llevar','Ropa cómoda y agua. El refugio te presta la correa, el arnés y las bolsas.'],['Cómo saludar','Deja que te huela primero y acaricia el lomo. Evita abrazarlo al inicio.'],['Si se pone nervioso','Detente, habla suave y avisa al voluntario. Nunca sueltes la correa.'],['Al terminar','Te preguntaremos cómo te sientes (10 segundos) para tu antes y después.']];
+ abrirDialogo(GUIA(a),`<div class="stack-lg">${items.map(([t,d],i)=>`<div class="guia-item"><span class="n" aria-hidden="true">${i+1}</span><div><h3>${t}</h3><p class="t-muted">${d}</p></div></div>`).join('')}
+  ${C.alerta('info','Siempre te acompaña un voluntario','Si algo te incomoda puedes terminar el encuentro cuando quieras.')}</div>`,
+  C.boton('Entendido',{icono:'check',attrs:'data-guia-ok'}));}
+function pedirCita(){abrirDialogo('Pedir una cita',`<form id="f-cita" class="stack-lg" novalidate><p>Elige con quién quieres hablar. Te escribiremos al correo para acordar la hora.</p>
+ <fieldset><legend>Profesional</legend><div class="stack-sm">${['Bienestar universitario de mi universidad','Psicólogo/a aliado de Huella (primera cita sin costo)'].map((x,i)=>`<label class="check" style="padding-top:0"><input type="radio" name="pro" value="${i}" ${i===0?'checked':''}><span>${x}</span></label>`).join('')}</div></fieldset></form>`,
+ C.boton('Cancelar',{tipo:'secundario',attrs:'data-cerrar'})+C.boton('Enviar solicitud',{icono:'check',attrs:'data-cita-ok'}))}
+function cancelar(id){const r=S.reservas.find(x=>x.id===id),a=byId(r.animal);
+ abrirDialogo(`¿Cancelar ${r.tipo==='visita'?'la visita':'el paseo'} con ${a.nombre}?`,`<p>Liberaremos el cupo para otra persona. Puedes volver a reservar cuando quieras.</p>`,
+  C.boton('Mantener reserva',{tipo:'secundario',attrs:'data-cerrar'})+C.boton('Sí, cancelar',{tipo:'peligro',icono:'trash',attrs:`data-cancelar-ok="${id}"`}))}
+function controles(){
+ abrirDialogo('Controles del prototipo',`<div class="stack-lg proto-panel">${C.alerta('aviso','No forman parte del producto','Sirven para revisar los estados de interfaz en el prototipo sin backend.')}
+ <div><h3 style="margin-bottom:4px">Escenarios</h3>
+  <label class="switch"><span><strong>Primer encuentro</strong><br><span class="t-small t-muted">La guía es obligatoria antes de confirmar.</span></span><input type="checkbox" role="switch" data-demo="primerEncuentro" ${S.demo.primerEncuentro?'checked':''}></label>
+  <label class="switch"><span><strong>Fallo de conexión al confirmar</strong><br><span class="t-small t-muted">El primer intento de confirmar falla (estado de error).</span></span><input type="checkbox" role="switch" data-demo="falloRed" ${S.demo.falloRed?'checked':''}></label>
+  <label class="switch"><span><strong>Sin animales disponibles</strong><br><span class="t-small t-muted">El match muestra el estado vacío.</span></span><input type="checkbox" role="switch" data-demo="sinAnimales" ${S.demo.sinAnimales?'checked':''}></label></div>
+ <div><h3 style="margin-bottom:8px">Ir a</h3><div class="row wrap" style="gap:8px">${[['proyecto','Proyecto'],['bienvenida','Bienvenida'],['inicio','Inicio'],['movil','Vista celular'],['tablero','Tablero de mockups'],['sistema','Sistema de diseño']].map(([r,l])=>`<a class="btn btn-secundario btn-sm" href="#${r}" data-cerrar>${l}</a>`).join('')}</div></div>
+ </div>`,C.boton('Reiniciar prototipo',{tipo:'texto',icono:'refresh',attrs:'data-reset'})+C.boton('Listo',{attrs:'data-cerrar'}));
+}
+document.getElementById('proto-btn').addEventListener('click',controles);
+dlg.addEventListener('change',e=>{const k=e.target.dataset.demo;if(k){S.demo[k]=e.target.checked;if(k==='falloRed')S.falloUsado=false;guardar();anunciar('Escenario actualizado')}});
+dlg.addEventListener('click',e=>{
+ if(e.target.closest('[data-guia-ok]')){S.guiaLeida=true;guardar();dlg.close();const g=document.getElementById('c-guia');if(g){g.checked=true;const pe=document.getElementById('pendiente');if(pe)pe.hidden=true;g.removeAttribute('aria-invalid');document.getElementById('c-guia-err').innerHTML='';g.focus()}anunciar('Guía leída')}
+ if(e.target.closest('[data-cita-ok]')){dlg.close();toast('Solicitud enviada. Te escribiremos en menos de 24 horas.','check')}
+ const c=e.target.closest('[data-cancelar-ok]');if(c){S.reservas=S.reservas.filter(r=>r.id!==c.dataset.cancelarOk);guardar();dlg.close();toast('Reserva cancelada. El cupo quedó libre.','check');render()}
+ if(e.target.closest('[data-reset]')){const d=S.demo;S=ESTADO0();guardar();aplicarTexto();dlg.close();toast('Prototipo reiniciado','refresh');ir('bienvenida')}
+});
+
+/* =========================================================
+   UTILIDADES, EVENTOS GLOBALES Y ENRUTADOR
+   ========================================================= */
+function toast(m,i='check'){const t=document.getElementById('toast');t.innerHTML=ic(i,20)+`<span>${m}</span>`;t.classList.add('ver');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('ver'),3200)}
+function anunciar(m){const a=document.getElementById('anuncio');a.textContent='';setTimeout(()=>a.textContent=m,50)}
+function enfocarTitulo(){const h=document.querySelector('#main h1');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:false})}}
+function aplicarTexto(){document.documentElement.classList.toggle('texto-grande',!!S.textoGrande)}
+const ruta=()=>(location.hash||'#proyecto').slice(1).split('?')[0]||'proyecto';
+function ir(r){if(ruta()===r)render();else location.hash=r}
+const ATRAS={checkin:'inicio',apoyo:'checkin',match:'checkin',horario:()=>S.origen==='match'?'match':'animal',confirmar:'horario',registro:'bienvenida',animal:'explorar',listo:'inicio'};
+
+document.addEventListener('click',e=>{
+ const t=e.target;
+ const irA=t.closest('[data-ir]');if(irA&&!irA.closest('form#f-registro button[type=submit]')){ir(irA.dataset.ir);return}
+ if(t.closest('[data-ayuda]'))return ayuda();
+ if(t.closest('[data-atras]')){let a=ATRAS[ruta()];if(typeof a==='function')a=a();ir(a||'inicio');return}
+ if(t.closest('[data-otro]')){S.idx++;guardar();pintarMatch();return}
+ if(t.closest('[data-reiniciar-cola]')){S.idx=0;guardar();pintarMatch();return}
+ if(t.closest('[data-avisar]'))return toast('Listo: te avisaremos cuando haya cupos.','bell');
+ if(t.closest('[data-guia]'))return guia();
+ if(t.closest('[data-cita]'))return pedirCita();
+ const ver=t.closest('[data-ver]');if(ver){S.ver=ver.dataset.ver;guardar();ir('animal');return}
+ const fil=t.closest('[data-filtro]');if(fil){S.filtro=fil.dataset.filtro;guardar();render(false);document.querySelector(`[data-filtro="${S.filtro}"]`).focus();return}
+ const fav=t.closest('[data-fav]');if(fav){const id=fav.dataset.fav;S.favoritos=S.favoritos.includes(id)?S.favoritos.filter(x=>x!==id):[...S.favoritos,id];guardar();toast(S.favoritos.includes(id)?`${byId(id).nombre} está en tus favoritos`:'Quitado de favoritos','heart');render(false);document.querySelector('[data-fav]').focus();return}
+ const res=t.closest('[data-reservar]');if(res){S.animal=res.dataset.reservar;S.origen='explorar';S.reserva={dia:null,hora:null};guardar();ir('horario');return}
+ if(t.closest('[data-continuar-horario]')){if(S.reserva.hora==null){document.getElementById('h-err').innerHTML=`<p class="msg-error" role="alert">${ic('alert',18)}Elige una hora con cupo para continuar.</p>`;const r=document.querySelector('[name=hora]');(r||document.querySelector('[name=dia]:checked')).focus();return}ir('confirmar');return}
+ const rep=t.closest('[data-reprogramar]');if(rep){const r=S.reservas.find(x=>x.id===rep.dataset.reprogramar);S.animal=r.animal;S.ver=r.animal;S.origen='explorar';S.reprogramando=r.id;S.reserva={dia:r.dia,hora:null};guardar();ir('horario');return}
+ const can=t.closest('[data-cancelar]');if(can)return cancelar(can.dataset.cancelar);
+});
+
+function render(foco=true){
+ const r=ruta();
+ if(['sistema','tablero','movil','proyecto'].includes(r)){return renderDoc(r)}
+ document.getElementById('docroot').innerHTML='';document.body.classList.remove('vista-movil');document.getElementById('app').hidden=false;document.getElementById('skip').hidden=false;
+ const vista=(V[r]||V.bienvenida)();
+ document.body.classList.toggle('en-flujo',!!vista.enFlujo);
+ document.body.classList.toggle('sin-nav',!!vista.sinNav);
+ document.getElementById('tabbar').hidden=!!(vista.enFlujo||vista.sinNav);
+ pintarNav(r);cabecera(vista);
+ document.getElementById('main').innerHTML=vista.html;
+ document.title=`${vista.titulo} · Huella`;
+ if(vista.despues)vista.despues();
+ if(foco){window.scrollTo(0,0);enfocarTitulo();anunciar(vista.titulo)}
+}
+document.getElementById('skip').addEventListener('click',e=>{e.preventDefault();const m=document.getElementById('main');m.focus();m.scrollIntoView()});
+window.addEventListener('hashchange',()=>{if(dlg.open)dlg.close();token++;render()});
+aplicarTexto();
+</script>
+<script>
+/* =========================================================
+   SISTEMA DE DISEÑO Y TABLERO (documentación viva, Actividad 5)
+   ========================================================= */
+function navDoc(r){return `<nav class="doc-nav" aria-label="Documentación"><div class="in"><span class="marca"><span style="color:var(--c-acento)">${ic('paw',26)}</span>Huella</span><a href="#proyecto" ${r==='proyecto'?'aria-current="page"':''}>Proyecto</a><a href="#bienvenida">Prototipo</a><a href="#movil" ${r==='movil'?'aria-current="page"':''}>Vista celular</a><a href="#tablero" ${r==='tablero'?'aria-current="page"':''}>Tablero de mockups</a><a href="#sistema" ${r==='sistema'?'aria-current="page"':''}>Sistema de diseño</a></div></nav>`}
+function renderDoc(r){
+ document.getElementById('app').hidden=true;document.getElementById('tabbar').hidden=true;document.getElementById('skip').hidden=true;
+ document.body.classList.remove('en-flujo','sin-nav');document.body.classList.toggle('vista-movil',r==='movil');
+ const root=document.getElementById('docroot');
+ root.innerHTML=navDoc(r)+({sistema:docSistema,tablero:docTablero,movil:docMovil,proyecto:docProyecto}[r])();
+ document.title=({sistema:'Sistema de diseño',tablero:'Tablero de mockups',movil:'Vista celular',proyecto:'Proyecto'}[r])+' · Huella';
+ window.scrollTo(0,0);const h=root.querySelector('h1');h.setAttribute('tabindex','-1');h.focus();
+}
+const SW=[
+ ['Bosque','--c-bosque','#23302B','Texto principal, navegación activa, chips seleccionados',true],
+ ['Crema','--c-crema','#FAF6EF','Fondo general de la app'],
+ ['Arena','--c-arena','#F3ECE1','Fondos sutiles, etiquetas informativas'],
+ ['Superficie','--c-superficie','#FFFFFF','Tarjetas, campos, diálogos'],
+ ['Terracota (acción)','--c-primario','#B5482A','Acción principal: botones, franja elegida. Blanco encima 5,35:1',true],
+ ['Terracota vivo (decorativo)','--c-acento','#D9653B','Solo ilustración y marca. No usar con texto blanco (3,57:1)',true],
+ ['Texto secundario','--c-texto-2','#5A625D','Ayudas, metadatos. 5,84:1 sobre crema',true],
+ ['Borde de control','--c-borde-control','#8C938F','Bordes de campos y chips (3,14:1, ≥3:1)',true],
+ ['Éxito','--c-exito','#2F6B4F','Confirmaciones, cupos disponibles',true],
+ ['Error','--c-error','#A3271B','Errores de formulario y de conexión',true],
+ ['Aviso','--c-aviso','#7A4E00','Último cupo, sin cupo, guía obligatoria',true],
+ ['Info / foco','--c-info','#235380','Mensajes informativos y anillo de foco',true]];
+function docSistema(){
+ const btns=`<div class="var" data-l="Primario">${C.boton('Elegir horario',{icono:'calendar'})}</div><div class="var" data-l="Secundario">${C.boton('Ver otro',{tipo:'secundario',icono:'refresh'})}</div><div class="var" data-l="Texto">${C.boton('Ver mis encuentros',{tipo:'texto'})}</div><div class="var" data-l="Peligro">${C.boton('Sí, cancelar',{tipo:'peligro',icono:'trash'})}</div><div class="var" data-l="Cargando"><button class="btn btn-primario" aria-busy="true" type="button"><span class="spinner" aria-hidden="true"></span><span>Confirmando…</span></button></div><div class="var" data-l="Deshabilitado">${C.boton('No disponible',{attrs:'disabled'})}</div><div class="var" data-l="Ayuda (fijo)">${BTN_AYUDA.replace('data-ayuda','data-ayuda')}</div>`;
+ const toby=byId('toby');
+ return `<main class="doc" id="doc-main">
+ <p class="t-overline">Actividad 5 · Diseño visual</p><h1 style="font-size:2.25rem;margin-top:6px">Sistema de diseño de Huella</h1>
+ <p class="t-muted" style="max-width:70ch;margin-top:8px">Lenguaje visual cálido y tranquilo para personas con estrés o ansiedad: pocos colores con funciones claras, una sola tipografía (Nunito) en dos pesos, texto legible de 16 px y componentes grandes y fáciles de tocar. Todo lo que se ve aquí es el mismo código que usa el prototipo.</p>
+ <section aria-labelledby="s-color"><h2 id="s-color">1. Color</h2><p class="t-muted">Paleta limitada: neutros cálidos + un color de acción + cuatro colores de estado. Los estados siempre se acompañan de ícono y texto (nunca solo color).</p>
+  <div class="swatches" style="margin-top:16px">${SW.map(([n,v,h,u,osc])=>`<div class="swatch"><div class="m" style="background:${h}" aria-hidden="true"></div><div class="i"><strong>${n}</strong><br><code>${h}</code> · <code>${v}</code><br><span class="t-muted">${u}</span></div></div>`).join('')}</div></section>
+ <section aria-labelledby="s-tipo"><h2 id="s-tipo">2. Tipografía</h2><p class="t-muted">Una sola familia: Nunito (redondeada y muy legible). Títulos en peso 800, texto en 400 y etiquetas en 700. Texto base 16 px; 13–14 px solo en metadatos.</p>
+  <div class="tabla-wrap" role="region" aria-label="Tabla de estilos tipográficos" tabindex="0"><table class="tabla"><thead><tr><th scope="col">Estilo</th><th scope="col">Muestra</th><th scope="col">Especificación</th><th scope="col">Uso</th></tr></thead><tbody>
+  <tr><td>Display</td><td><span class="t-display">Huella</span></td><td>Nunito 800 · 32–44 px</td><td>Marca, portada</td></tr>
+  <tr><td>Título 1</td><td><span class="t-h1" style="font-family:var(--f-display);font-weight:800">Hola, Laura</span></td><td>Nunito 800 · 24 px (28 en escritorio)</td><td>Un título por pantalla</td></tr>
+  <tr><td>Título 2</td><td><span class="t-h2" style="font-family:var(--f-display);font-weight:800">Próximo encuentro</span></td><td>Nunito 800 · 18 px</td><td>Secciones y tarjetas</td></tr>
+  <tr><td>Texto</td><td>Te sugerimos un compañero.</td><td>Nunito 400 · 16/24</td><td>Párrafos, descripciones</td></tr>
+  <tr><td>Etiqueta</td><td><span class="t-label">Correo electrónico</span></td><td>Nunito 700 · 15–16</td><td>Campos, botones (800)</td></tr>
+  <tr><td>Ayuda / meta</td><td><span class="t-small t-muted">Lo usamos para enviarte la confirmación.</span></td><td>Nunito 400 · 14/20 · gris 5A625D</td><td>Ayudas, metadatos</td></tr>
+  <tr><td>Sobretítulo</td><td><span class="t-overline">Sugerencia 1 de 4</span></td><td>Nunito 700 · 14 · gris</td><td>Contexto sobre el título</td></tr></tbody></table></div></section>
+ <section aria-labelledby="s-esp"><h2 id="s-esp">3. Espaciado y alineación</h2><p class="t-muted">Escala de 4 px: 4 · 8 · 12 · 16 · 24 · 32 · 48. Márgenes de pantalla 16 px (móvil) y 32 px (escritorio). Dentro de una tarjeta 16–24 px; entre secciones 24 px. Todo alineado a la izquierda (salvo estados vacíos y éxito), una sola columna en móvil y dos columnas a partir de 1024 px.</p>
+  <div class="row wrap" style="margin-top:16px;align-items:flex-end">${[4,8,12,16,24,32,48].map(n=>`<div style="text-align:center"><div style="width:${n}px;height:${n}px;background:var(--c-primario);border-radius:2px;margin:0 auto"></div><span class="t-small">${n}</span></div>`).join('')}</div></section>
+ <section aria-labelledby="s-forma"><h2 id="s-forma">4. Forma y tratamiento visual</h2>
+  <div class="row wrap" style="margin-top:12px;gap:24px">${[['8 px','chips pequeños',8],['12 px','botones, campos, tarjetas',12],['Píldora','chips y etiquetas',999]].map(([n,u,r])=>`<div><div style="width:96px;height:64px;border:2px solid var(--c-bosque);border-radius:${r}px;background:#fff"></div><p class="t-small"><strong>${n}</strong><br>${u}</p></div>`).join('')}
+  <div><div style="width:96px;height:64px;border-radius:12px;background:#fff;border:1px solid var(--c-borde)"></div><p class="t-small"><strong>Borde 1 px</strong><br>tarjetas (sin sombra)</p></div></div>
+  <h3 style="margin-top:20px">Iconografía</h3><p class="t-muted">Línea de 2 px, extremos redondeados, cuadrícula de 24 px. Siempre con texto visible o etiqueta accesible.</p>
+  <div class="row wrap" style="margin-top:10px;gap:14px">${['home','compass','calendar','paw','plus','help','user','clock','pin','check','alert','info','phone','heart','lock','shield','users','book','bell','sparkle','walk','refresh'].map(n=>`<span title="${n}" style="display:inline-flex;flex-direction:column;align-items:center;font-size:.6875rem;color:var(--c-texto-2);gap:2px"><span style="color:var(--c-bosque)">${ic(n,26)}</span>${n}</span>`).join('')}</div>
+  <h3 style="margin-top:20px">Ilustración</h3><p class="t-muted">Retratos planos y sencillos de cada animal, usados como marcador de la foto real que tendrá la versión final.</p>
+  <div class="row wrap" style="margin-top:10px">${ANIMALES.map(a=>mascota(a,72)).join('')}</div></section>
+ <section aria-labelledby="s-comp"><h2 id="s-comp">5. Biblioteca de componentes</h2><p class="t-muted">13 componentes reutilizables. Cada uno es una función o clase CSS única que usan todas las pantallas.</p>
+  ${comp('C1 · Botón','Una acción principal por pantalla (terracota). La secundaria va con borde; las terciarias como texto. «Peligro» solo para acciones destructivas confirmadas. Altura mínima 48 px.',btns)}
+  ${comp('C2 · Campo de texto','Etiqueta siempre visible arriba, ayuda opcional y mensaje de error con ícono que dice cómo corregir.',`<div class="var" style="min-width:min(240px,100%)" data-l="Normal"><div class="campo"><label for="d1">Nombre</label><input class="input" id="d1" value="Laura"></div></div><div class="var" style="min-width:min(240px,100%)" data-l="Con error"><div class="campo"><label for="d2">Correo electrónico</label><input class="input" id="d2" value="laura@" aria-invalid="true" aria-describedby="d2e"><p class="msg-error" id="d2e">${ic('alert',18)}Revisa el correo: debe tener la forma nombre@dominio.com.</p></div></div>`)}
+  ${comp('C3 · Selector de ánimo','Escala 1–5 con cara, número y palabra: no depende del color. Radio nativo, se maneja con flechas del teclado.',`<div style="flex:1;min-width:min(280px,100%)"><div class="animo">${[1,2,3,4,5].map(m=>`<label><input type="radio" name="dm" ${m===2?'checked':''}>${cara(m)}<span class="num">${m}</span><span>${ANIMOS[m-1]}</span></label>`).join('')}</div></div>`)}
+  ${comp('C4 · Chip seleccionable y etiqueta','El chip (con borde) se puede elegir: causas del ánimo, preferencias. La etiqueta (sin borde) solo informa: temperamento. Seleccionado = fondo bosque + ✓.',`<div class="var" data-l="Chip"><div class="chips"><label class="chip-sel"><input type="checkbox" checked><span>${ic('check',16,'','chk')}Soledad</span></label><label class="chip-sel"><input type="checkbox"><span>${ic('check',16,'','chk')}Sueño</span></label></div></div><div class="var" data-l="Etiqueta"><div class="chips">${C.tag('Tranquilo')}${C.tag('Pequeño')}</div></div><div class="var" data-l="Insignia"><div class="chips"><span class="badge badge-exito">${ic('check',14)}Confirmado</span><span class="badge badge-aviso">${ic('info',14)}Obligatoria</span><span class="badge badge-info">${ic('lock',14)}Privado</span></div></div>`)}
+  ${comp('C5 · Tarjeta de animal','Retrato, nombre, edad, refugio, distancia y dos rasgos. Toda la tarjeta es un botón que abre la ficha.',`<div style="flex:1;min-width:min(280px,100%);max-width:420px">${C.tarjetaAnimal(toby)}</div>`)}
+  ${comp('C6 · Tarjeta de encuentro','Resume una reserva. Variante con acciones (Encuentros) y sin acciones (Inicio, confirmación).',`<div style="flex:1;min-width:min(280px,100%);max-width:480px">${C.tarjetaEncuentro({id:'demo',animal:'toby',dia:2,hora:1,tipo:'paseo'})}</div>`)}
+  ${comp('C7 · Franja horaria','Disponible (verde «3 cupos»), último cupo (ámbar), seleccionada (terracota + ✓) y sin cupo (tachada y punteada; al tocarla propone alternativas).',`<div class="franjas" style="flex:1;min-width:min(280px,100%)"><label class="franja"><input type="radio" name="fx"><span class="caja"><span class="hora">9:00 a. m.</span><span class="cupo">3 cupos</span></span></label><label class="franja"><input type="radio" name="fx"><span class="caja"><span class="hora">10:30 a. m.</span><span class="cupo ultimo">Último cupo</span></span></label><label class="franja"><input type="radio" name="fx" checked><span class="caja"><span class="hora">3:00 p. m.</span><span class="cupo">2 cupos</span></span></label><button type="button" class="franja-llena"><span class="hora">4:30 p. m.</span><span class="cupo">Sin cupo</span></button></div>`)}
+  ${comp('C8 · Indicador de pasos','Texto «Paso n de 4» + barra segmentada. Muestra que reservar es corto (decisión de la Actividad 4).',`<div style="flex:1;min-width:min(260px,100%);max-width:360px">${C.pasos(2,4,'Tu match')}</div>`)}
+  ${comp('C9 · Navegación principal','Móvil: barra inferior de 4 pestañas + botón central «Match». Escritorio: barra lateral con las mismas secciones. Pestaña activa: color + subrayado (no solo color).',`<div style="flex:1;min-width:min(300px,100%);max-width:420px;position:relative"><nav aria-label="Ejemplo de barra inferior" style="background:#fff;border:1px solid var(--c-borde);border-radius:16px;padding-top:24px"><ul style="display:grid;grid-template-columns:repeat(5,1fr);list-style:none;margin:0;padding:6px 4px">${TABS.map(([rr,l,i],k)=>rr==='checkin'?`<li><span class="tab tab-match"><span class="fab">${ic('plus',28)}</span><span class="lbl">Match</span></span></li>`:`<li><span class="tab" ${k===0?'aria-current="page"':''}>${ic(i,24)}<span class="lbl">${l}</span></span></li>`).join('')}</ul></nav></div>`)}
+  ${comp('C10 · Encabezado con Ayuda','Ayuda fija arriba a la derecha en todas las pantallas, separada de la barra inferior para no tocarla por error.',`<div style="flex:1;min-width:min(300px,100%);max-width:420px;background:var(--c-crema);border:1px solid var(--c-borde);border-radius:12px"><div class="topbar-in"><span class="avatar-btn" style="display:flex;align-items:center;justify-content:center">L</span><span class="titulo" style="flex:1;text-align:center;font-family:var(--f-display);font-weight:800">Inicio</span>${BTN_AYUDA}</div></div>`)}
+  ${comp('C11 · Mensaje de estado','Info, éxito, error y aviso: borde lateral, ícono y título en texto. El error usa role="alert".',`<div class="stack-sm" style="flex:1;min-width:min(280px,100%)">${C.alerta('info','Privacidad por defecto','Tu ánimo solo lo ves tú.')}${C.alerta('exito','Reserva confirmada','')}${C.alerta('error','No pudimos confirmar tu reserva','Revisa tu conexión y toca «Reintentar».')}${C.alerta('aviso','Esta franja ya está llena','Te proponemos otras cercanas.')}</div>`)}
+  ${comp('C12 · Estado vacío y carga','Vacío: ícono, título, explicación y una acción para salir. Carga: indicador giratorio con texto de estado.',`<div style="flex:1;min-width:min(240px,100%)">${C.vacio('Todavía no tienes encuentros','Cuando reserves aparecerá aquí.',C.boton('Buscar mi match',{icono:'plus',sm:true}),'calendar')}</div><div style="flex:1;min-width:min(200px,100%)"><div class="cargando"><span class="spinner oscuro" aria-hidden="true"></span><span>Cargando sugerencia…</span></div></div>`)}
+  ${comp('C13 · Interruptor y diálogo','Interruptor para ajustes binarios (texto grande, recordatorios). Diálogo modal para ayuda, guía y confirmaciones destructivas; se cierra con Esc.',`<div style="flex:1;min-width:min(260px,100%);background:#fff;border-radius:12px;padding:8px 16px"><label class="switch"><span><strong>Texto grande</strong></span><input type="checkbox" role="switch" checked></label><label class="switch"><span><strong>Recordatorios</strong></span><input type="checkbox" role="switch"></label></div><div>${C.boton('Abrir diálogo de ayuda',{tipo:'secundario',icono:'help',attrs:'data-ayuda'})}</div>`)}
+ </section></main>`;}
+
+function docMovil(){return `<main class="doc" id="doc-main"><h1 style="font-size:1.75rem">Vista celular</h1>
+ <p class="t-muted" style="margin:6px 0 20px;max-width:70ch">El mismo prototipo dentro de un marco de 390 × 844 px, para recorrerlo como en un teléfono desde un computador. En un celular real, abre directamente el <a href="#bienvenida">prototipo</a>.</p>
+ <div class="marco"><iframe src="index.html#bienvenida" title="Prototipo de Huella en tamaño de celular" width="390" height="844"></iframe></div></main>`}
+function docProyecto(){const tarjeta=(h,t,d,b)=>`<a class="card hub" href="#${h}"><h2>${t}</h2><p class="t-muted" style="margin-top:6px">${d}</p><span class="btn btn-${b} btn-sm" style="margin-top:12px">Abrir</span></a>`;
+ return `<main class="doc" id="doc-main"><p class="t-overline">Diseño de Interfaces de Usuario · Universidad Antonio Nariño · 2026</p>
+ <h1 style="font-size:2rem;margin-top:6px">Huella · Prototipo y diseño visual</h1>
+ <p style="max-width:72ch;margin-top:10px">Huella es una aplicación de bienestar emocional a través de encuentros con animales de refugio. Aquí están los resultados de la <strong>Guía 5</strong> (mockups, estilos visuales y biblioteca de componentes) y de la <strong>Guía 6</strong> (prototipo navegable, estados, diseño responsive y accesibilidad). Autora: July Tatiana Ariza Peña.</p>
+ <div class="hubs">${tarjeta('bienvenida','Prototipo navegable','Recorre la tarea prioritaria: reservar un paseo según tu ánimo del día. Se adapta a celular y a computador.','primario')}
+ ${tarjeta('movil','Vista celular','El prototipo en un marco de teléfono (390 × 844 px), para revisarlo desde un computador.','secundario')}
+ ${tarjeta('tablero','Tablero de mockups','Todas las pantallas del flujo en móvil y escritorio.','secundario')}
+ ${tarjeta('sistema','Sistema de diseño','Colores, tipografía, espaciado, forma y los 13 componentes reutilizables.','secundario')}</div>
+ <section><h2>Cómo revisar el prototipo</h2><ol class="stack-sm" style="padding-left:20px;max-width:72ch;margin-top:8px">
+ <li>Abre el prototipo y toca «Ya tengo cuenta» (o crea una cuenta para ver la validación del registro).</li>
+ <li>En Inicio toca «Hacer check-in», elige cómo te sientes y algunas causas, y toca «Ver mi match».</li>
+ <li>Toca «Elegir horario», selecciona una franja (el sábado no tiene cupos y propone alternativas), lee la guía y confirma.</li>
+ <li>Para ver otros estados usa el botón «Controles del prototipo»: fallo de conexión, sin animales disponibles o primer encuentro. Ese botón no forma parte del producto.</li>
+ <li>Para ver la rama de apoyo, elige el ánimo 1 en el check-in.</li></ol>
+ <p class="t-small t-muted" style="margin-top:12px">Los animales, los refugios y los cupos son datos ficticios. El prototipo no tiene backend: las respuestas se simulan en el navegador.</p></section></main>`}
+function comp(n,u,demo){return `<article class="comp" aria-label="${n}"><div><h3>${n}</h3><p class="t-small t-muted" style="margin-top:6px">${u}</p></div><div class="demo">${demo}</div></article>`}
+const MOCKS=[['01-bienvenida','Bienvenida'],['02-registro-error','Registro con validación'],['03-inicio-vacio','Inicio (sin encuentros)'],['04-checkin','Check-in de ánimo · paso 1'],['05-apoyo','Ánimo 1: apoyo profesional'],['06-match-carga','Match · cargando'],['07-match','Match sugerido · paso 2'],['08-horario','Horario · paso 3'],['09-sin-cupo','Franja sin cupo → alternativas'],['10-confirmar','Confirmar + guía · paso 4'],['11-error-red','Error de conexión'],['12-listo','Éxito: reserva lista'],['13-inicio-reserva','Inicio con próximo encuentro'],['14-encuentros','Mis encuentros']];
+function docTablero(){return `<main class="doc" id="doc-main"><p class="t-overline">Actividad 5 y 6 · Mockups</p><h1 style="font-size:2.25rem;margin-top:6px">Tablero de mockups</h1>
+ <p class="t-muted" style="max-width:70ch;margin-top:8px">Pantallas del flujo prioritario «reservar un paseo según el ánimo del día», capturadas del prototipo funcional en móvil (390 × 844) y escritorio (1440 × 900). Para recorrerlas de forma interactiva abre el <a href="#bienvenida">prototipo</a>.</p>
+ <section><h2>Móvil</h2><div class="galeria" style="margin-top:16px">${MOCKS.map(([f,t])=>`<figure><img src="mockups/movil-${f}.png" alt="Mockup móvil: ${t}" loading="lazy"><figcaption><strong>${t}</strong></figcaption></figure>`).join('')}</div></section>
+ <section><h2>Escritorio</h2><div class="galeria desk" style="margin-top:16px">${MOCKS.filter(m=>!['06-match-carga','02-registro-error'].includes(m[0])).map(([f,t])=>`<figure><img src="mockups/escritorio-${f}.png" alt="Mockup de escritorio: ${t}" loading="lazy"><figcaption><strong>${t}</strong></figcaption></figure>`).join('')}</div></section></main>`}
+render(false);
+</script>
+</body>
+</html>
