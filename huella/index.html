@@ -1024,7 +1024,13 @@ function docProyecto(){const tarjeta=(h,t,d,b)=>`<a class="card hub" href="#${h}
  <li>Toca «Elegir horario», selecciona una franja (el sábado no tiene cupos y propone alternativas), lee la guía y confirma.</li>
  <li>Para ver otros estados usa el botón «Controles del prototipo»: fallo de conexión, sin animales disponibles o primer encuentro. Ese botón no forma parte del producto.</li>
  <li>Para ver la rama de apoyo, elige el ánimo 1 en el check-in.</li></ol>
- <p class="t-small t-muted" style="margin-top:12px">Los animales, los refugios y los cupos son datos ficticios. El prototipo no tiene backend: las respuestas se simulan en el navegador.</p></section></main>`}
+ <p class="t-small t-muted" style="margin-top:12px">Los animales, los refugios y los cupos son datos ficticios. El prototipo no tiene backend: las respuestas se simulan en el navegador.</p></section>
+ <section aria-labelledby="h-docs"><h2 id="h-docs">Documentos de la entrega</h2><ul class="stack-sm" style="padding-left:20px;margin-top:8px">
+ <li><a href="documentos/Actividad5_Huella_Ariza.pdf">Informe Actividad 5 · Diseño visual, mockups y sistema de diseño (PDF)</a></li>
+ <li><a href="documentos/Actividad6_Huella_Ariza.pdf">Informe Actividad 6 · Prototipado interactivo, responsive y accesibilidad (PDF)</a></li>
+ <li><a href="documentos/Presentacion_Huella_Guias5y6.pdf">Presentación de las guías 5 y 6 (PDF)</a></li>
+ <li><a href="documentos/Guion_Presentacion_Huella.pdf">Guion de la presentación (PDF)</a></li>
+ <li><a href="https://github.com/JulyTAriza/Proyectos-UAN/tree/gh-pages/huella">Repositorio con el código fuente (archivo editable)</a></li></ul></section></main>`}
 function comp(n,u,demo){return `<article class="comp" aria-label="${n}"><div><h3>${n}</h3><p class="t-small t-muted" style="margin-top:6px">${u}</p></div><div class="demo">${demo}</div></article>`}
 const MOCKS=[['01-bienvenida','Bienvenida'],['02-registro-error','Registro con validación'],['03-inicio-vacio','Inicio (sin encuentros)'],['04-checkin','Check-in de ánimo · paso 1'],['05-apoyo','Ánimo 1: apoyo profesional'],['06-match-carga','Match · cargando'],['07-match','Match sugerido · paso 2'],['08-horario','Horario · paso 3'],['09-sin-cupo','Franja sin cupo → alternativas'],['10-confirmar','Confirmar + guía · paso 4'],['11-error-red','Error de conexión'],['12-listo','Éxito: reserva lista'],['13-inicio-reserva','Inicio con próximo encuentro'],['14-encuentros','Mis encuentros']];
 function docTablero(){return `<main class="doc" id="doc-main"><p class="t-overline">Actividad 5 y 6 · Mockups</p><h1 style="font-size:2.25rem;margin-top:6px">Tablero de mockups</h1>
