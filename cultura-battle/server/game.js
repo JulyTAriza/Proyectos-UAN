@@ -22,9 +22,12 @@ const fail = (msg) => { throw new GameError(msg); };
 const token = () => crypto.randomBytes(24).toString('base64url');
 const newId = () => crypto.randomBytes(8).toString('hex');
 const sha = (s) => crypto.createHash('sha256').update(String(s)).digest('hex');
+// Comparación en tiempo constante (sin Buffer, funciona también en el navegador).
 const safeEq = (a, b) => {
-  const ba = Buffer.from(String(a)), bb = Buffer.from(String(b));
-  return ba.length === bb.length && crypto.timingSafeEqual(ba, bb);
+  a = String(a); b = String(b);
+  let diff = a.length ^ b.length;
+  for (let i = 0; i < Math.max(a.length, b.length); i++) diff |= (a.charCodeAt(i) | 0) ^ (b.charCodeAt(i) | 0);
+  return diff === 0;
 };
 function shuffle(arr) {
   const a = arr.slice();
@@ -351,7 +354,6 @@ class GameManager {
     if (g.current && g.current.responders) {
       for (const [tid, rid] of Object.entries(g.current.responders)) if (rid === playerId) this.reassignResponder(g, tid);
     }
-    p.teamId = p.teamId; // se conserva para auditoría pero no cuenta en el equipo
     this.pruneTeams(g);
     this.commit(g);
     this.maybeAutoReveal(g);

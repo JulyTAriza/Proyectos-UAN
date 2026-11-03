@@ -22,22 +22,35 @@
   const $ = (s, r = document) => r.querySelector(s);
   const now = () => Date.now() + offset;
 
-  /* ---------------- Conexión ---------------- */
-  function boot() {
-    const sc = document.createElement('script');
-    sc.src = SERVER + '/socket.io/socket.io.js';
-    sc.onload = connect;
-    sc.onerror = () => {
-      $('#app').innerHTML = `<div class="center card"><h2>⚠️ No se pudo contactar el servidor</h2>
-        <p class="muted">Servidor configurado: <b>${esc(SERVER)}</b></p>
-        <p class="muted">Si el servidor está en un plan gratuito puede tardar ~1 minuto en despertar. Recarga la página en unos segundos.</p>
-        <button class="btn block" onclick="location.reload()">Reintentar</button></div>`;
-    };
-    document.head.appendChild(sc);
+  /* ---------------- Conexión ----------------
+   * Modo "servidor": backend Node + Socket.io (si está disponible en SERVER).
+   * Modo "anfitrión" (GitHub Pages): el navegador del admin ejecuta el motor de juego y
+   * todos se comunican en tiempo real por MQTT sobre WebSocket (broker público).
+   */
+  const MQTT_URL = qs.get('mqtt') || window.CB_MQTT_URL || 'wss://broker.emqx.io:8084/mqtt';
+  let MODE = 'server';
+  function loadScript(src) {
+    return new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = src; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc); });
   }
-
-  function connect() {
-    socket = io(SERVER, { transports: ['websocket', 'polling'], reconnectionDelayMax: 4000 });
+  async function boot() {
+    const forced = qs.get('mode') || window.CB_MODE;
+    if (forced !== 'host') {
+      try { await loadScript(SERVER + '/socket.io/socket.io.js'); MODE = 'server'; return connect(); }
+      catch { if (forced === 'server') return bootError(); }
+    }
+    MODE = 'host';
+    try {
+      await loadScript('vendor/mqtt.min.js');
+      if (IS_ADMIN) await loadScript('host.bundle.js');
+    } catch { return bootError(); }
+    connectHost();
+  }
+  function bootError() {
+    $('#app').innerHTML = `<div class="center card"><h2>⚠️ No se pudo conectar</h2>
+      <p class="muted">Revisa tu conexión a internet y recarga la página.</p>
+      <button class="btn block" onclick="location.reload()">Reintentar</button></div>`;
+  }
+  function wire() {
     socket.on('connect', () => { connected = true; resumeSession(); render(); });
     socket.on('disconnect', () => { connected = false; render(); });
     socket.on('state', (st) => {
@@ -48,6 +61,87 @@
     });
     socket.on('kicked', (m) => { kicked = m.message; store.del(LS.player); S = null; render(); });
     socket.on('replaced', () => { toast('Abriste la partida en otra pestaña o dispositivo.', true); S = null; render(); });
+  }
+  function connect() {
+    socket = io(SERVER, { transports: ['websocket', 'polling'], reconnectionDelayMax: 4000 });
+    wire();
+  }
+
+  // Pequeño emisor de eventos compatible con la API de Socket.io usada en este archivo.
+  function facade() {
+    const h = {};
+    return {
+      connected: false, hostOnline: true,
+      on(e, f) { (h[e] = h[e] || []).push(f); },
+      fire(e, a) { (h[e] || []).forEach((f) => f(a)); },
+      timeout(ms) { return { emit: (ev, data, cb) => this._emit(ev, data, cb, ms) }; },
+    };
+  }
+
+  function connectHost() {
+    if (IS_ADMIN) {
+      const f = facade();
+      const host = CBHost.createHost({
+        mqttUrl: MQTT_URL,
+        onState: (st) => f.fire('state', st),
+        onStatus: (on) => { const was = f.connected; f.connected = on; if (on && !was) f.fire('connect'); if (!on && was) f.fire('disconnect'); },
+      });
+      f._emit = (ev, data, cb) => setTimeout(() => cb(null, host.call(ev, data)), 0);
+      f.categories = host.categories;
+      socket = f; wire();
+      host.connect().catch(() => toast('No se pudo conectar al servicio en tiempo real. Reintentando…', true));
+      render();
+      return;
+    }
+    // Jugador
+    const f = facade();
+    const cid = 'p' + Math.random().toString(36).slice(2, 12);
+    const T = (code, rest) => `cb/v1/${code}/${rest}`;
+    let code = null, pubState = null, priv = null, hostSeen = Date.now(), seq = 0;
+    const waiting = new Map();
+    const c = mqtt.connect(MQTT_URL, { clientId: 'cb_' + cid, clean: true, keepalive: 20, reconnectPeriod: 2000, connectTimeout: 10000 });
+    const subscribe = (cd) => new Promise((res) => {
+      if (code === cd) return res();
+      if (code) c.unsubscribe([T(code, 'state'), T(code, 'hb'), T(code, 'down/' + cid)]);
+      code = cd; pubState = null; priv = null;
+      c.subscribe([T(cd, 'state'), T(cd, 'hb'), T(cd, 'down/' + cid)], { qos: 1 }, () => res());
+    });
+    c.on('connect', () => {
+      const was = f.connected; f.connected = true;
+      if (code) { const cd = code; code = null; subscribe(cd).then(() => !was && f.fire('connect')); } else if (!was) f.fire('connect');
+    });
+    c.on('close', () => { if (f.connected) { f.connected = false; f.fire('disconnect'); } });
+    const merged = () => {
+      if (!pubState || !priv) return;
+      f.fire('state', { ...pubState, you: priv.you, yourAnswer: priv.status === pubState.status ? priv.yourAnswer : null, canAnswer: priv.status === pubState.status && priv.canAnswer });
+    };
+    c.on('message', (topic, payload) => {
+      let m; try { m = JSON.parse(payload.toString()); } catch { return; }
+      if (topic.endsWith('/hb')) { hostSeen = Date.now(); if (m.resync && S && S.you) f.fire('connect'); return; }
+      if (topic.endsWith('/state')) { pubState = m; hostSeen = Date.now(); return merged(); }
+      if (m.type === 'reply') { const w = waiting.get(m.re); if (w) { waiting.delete(m.re); clearTimeout(w.t); w.cb(null, m.res); } }
+      else if (m.type === 'private') { priv = m.data; merged(); }
+      else if (m.type === 'kicked') f.fire('kicked', m);
+      else if (m.type === 'replaced') f.fire('replaced');
+      else if (m.type === 'resync') f.fire('connect'); // el anfitrión se reinició: reanudar sesión
+    });
+    f._emit = async (ev, data, cb, ms) => {
+      const cd = String((data && data.code) || code || '').toUpperCase();
+      if (!cd) return cb(null, { ok: false, error: 'Falta el código de la partida.' });
+      await subscribe(cd);
+      const id = cid + '-' + (++seq);
+      const t = setTimeout(() => { waiting.delete(id); cb(null, { ok: false, error: ev === 'player:join' || ev === 'player:resume' ? 'No se encontró la partida. Verifica el código y que el administrador tenga el panel abierto.' : 'El anfitrión no respondió. Intenta de nuevo.' }); }, ms);
+      waiting.set(id, { cb, t });
+      c.publish(T(cd, 'up/' + cid), JSON.stringify({ id, ev, data }), { qos: 1 });
+    };
+    setInterval(() => {
+      if (code && S && S.you) c.publish(T(code, 'up/' + cid), JSON.stringify({ ev: 'hb' }), { qos: 0 });
+      const online = Date.now() - hostSeen < 15000;
+      if (online !== f.hostOnline) { f.hostOnline = online; render(); }
+    }, 4000);
+    addEventListener('pagehide', () => { if (code) c.publish(T(code, 'up/' + cid), JSON.stringify({ ev: 'bye' }), { qos: 0 }); });
+    socket = f; wire();
+    render();
   }
 
   function emit(ev, data = {}) {
@@ -83,11 +177,18 @@
       if (a && el.contains(a) && /INPUT|SELECT|TEXTAREA/.test(a.tagName)) { deferred = true; continue; }
       el.innerHTML = html; cache[k] = html;
     }
+    const cb = root.querySelector('.conn');
+    if (cb) cb.outerHTML = connBadge();
   }
   document.addEventListener('focusout', () => setTimeout(() => { if (deferred) { deferred = false; render(); } }, 50));
 
   const top = () => `<div class="top"><div class="logo">⚡ <b>CULTURA BATTLE</b></div>
-    <div class="conn ${connected ? '' : 'off'}"><i></i>${connected ? 'Conectado' : 'Reconectando…'}</div></div>`;
+    ${connBadge()}</div>`;
+  function connBadge() {
+    const hostOff = MODE === 'host' && !IS_ADMIN && socket && socket.hostOnline === false && S && S.you;
+    const ok = connected && !hostOff;
+    return `<div class="conn ${ok ? '' : 'off'}"><i></i>${!connected ? 'Reconectando…' : hostOff ? 'Esperando al anfitrión…' : 'Conectado'}</div>`;
+  }
 
   function render() {
     if (!socket) return;
@@ -233,7 +334,7 @@
     const sel = (n, v, opts) => `<select name="${n}">${opts.map(([k, l]) => `<option value="${k}" ${String(v) === String(k) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
     const chosen = c.categories && c.categories.length ? c.categories : cats.map((x) => x.id);
     return `<form data-form="${creating ? 'create' : 'config'}">
-      ${creating ? '<label>Contraseña de administrador</label><input type="password" name="password" required autocomplete="current-password">' : ''}
+      ${creating && MODE === 'server' ? '<label>Contraseña de administrador</label><input type="password" name="password" required autocomplete="current-password">' : ''}
       <div class="two"><div><label>Modalidad</label>${sel('mode', c.mode, [['individual', '👤 Individual'], ['teams', '👥 Por equipos']])}</div>
       <div><label>Formación de equipos</label>${sel('teamFormation', c.teamFormation, [['free', 'Libre (los jugadores eligen)'], ['auto', 'Automática']])}</div></div>
       <div class="three"><div><label>Máx. por equipo</label><input type="number" name="maxTeamSize" min="1" max="20" value="${c.maxTeamSize}"></div>
@@ -267,6 +368,7 @@
 
   function renderAdmin() {
     if (!S || !S.admin) {
+      if (!ui.cats && MODE === 'host' && socket.categories) ui.cats = socket.categories();
       if (!ui.cats) { ui.cats = []; fetch(SERVER + '/api/categories').then((r) => r.json()).then((c) => { ui.cats = c; curScreen = null; render(); }).catch(() => {}); }
       return mount('admin-login', `${top()}<div class="center card" style="max-width:720px"><h2>🛠️ Crear partida</h2><div data-slot="f"></div></div>
         <a class="link" href="./" onclick="setTimeout(()=>location.reload())">Ir a la vista de jugador</a>`, { f: configForm(DEFAULTS, ui.cats, true) });
@@ -348,7 +450,7 @@
         const r = await emit('player:createTeam', { name: f.name.value, color: ui.teamColor });
         if (r.ok) f.reset();
       } else if (kind === 'create') {
-        const r = await emit('admin:create', { password: f.password.value, config: readConfig(f) });
+        const r = await emit('admin:create', { password: f.password ? f.password.value : '', config: readConfig(f) });
         if (r.ok) store.set(LS.admin, { code: r.code, adminToken: r.adminToken });
       } else if (kind === 'config') {
         const r = await emit('admin:config', { config: readConfig(f) });

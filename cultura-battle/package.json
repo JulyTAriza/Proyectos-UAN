@@ -10,7 +10,9 @@
     "start": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env server/index.js",
     "dev": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env --watch server/index.js",
     "seed": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env server/seed.js",
-    "test": "node --disable-warning=ExperimentalWarning tests/e2e.test.js"
+    "test": "node --disable-warning=ExperimentalWarning tests/e2e.test.js",
+    "build:web": "esbuild web/host-entry.js --bundle --minify --format=iife --alias:node:crypto=./web/crypto-shim.js --outfile=docs/host.bundle.js",
+    "test:host": "node --disable-warning=ExperimentalWarning tests/host.test.js"
   },
   "license": "MIT",
   "dependencies": {
@@ -18,6 +20,10 @@
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
-    "socket.io-client": "^4.8.1"
+    "aedes": "^0.51.3",
+    "esbuild": "^0.28.2",
+    "mqtt": "^5.16.1",
+    "socket.io-client": "^4.8.1",
+    "ws": "^8.22.1"
   }
 }

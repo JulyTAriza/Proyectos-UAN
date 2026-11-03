@@ -1,4 +1,4 @@
-Ejecutado: 2026-11-03T15:40:26.598Z
+Ejecutado: 2026-11-03T15:49:22.011Z
 ✅ 1-2. Crear partida con código y registrar 6 jugadores simultáneos
 ✅ Evitar nombres duplicados (sin distinguir mayúsculas) y código inválido
 ✅ Estado "listo" visible en la sala de espera

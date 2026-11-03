@@ -27,6 +27,13 @@ Celulares / PCs ──HTTPS──► GitHub Pages (docs/)        (interfaz)
 - Jugadores identificados por token aleatorio guardado en su navegador → reconexión sin perder progreso. Los expulsados no pueden volver con su sesión ni su nombre.
 - Limitador de solicitudes por conexión, saneamiento de textos y escape de HTML en el cliente.
 
+## Dos formas de funcionar (se detecta sola)
+
+1. **Modo GitHub Pages (sin servidor propio)** — el que está publicado. El navegador del **administrador** actúa como anfitrión: ejecuta el mismo motor de juego (`server/game.js`, empaquetado en `docs/host.bundle.js`) y guarda la partida en su `localStorage`. Los jugadores se comunican con él en tiempo real por **MQTT sobre WebSocket** a través del broker público `wss://broker.emqx.io:8084/mqtt` (configurable en `docs/config.js` o con `?mqtt=`). La respuesta correcta nunca sale del dispositivo del administrador antes de revelarse y las acciones de administrador solo se ejecutan localmente.
+   - El panel del admin debe permanecer abierto durante la partida (si lo recarga, la partida continúa y los jugadores se reconectan solos).
+   - Al usar un broker público, cualquiera que conozca el código podría observar los mensajes de la partida; para mayor privacidad usa el modo servidor o un broker propio.
+2. **Modo servidor (Node.js)** — si el sitio se abre desde el backend (`npm start`), se usa Socket.io + SQLite con contraseña de administrador.
+
 ## Ejecutar localmente (2 minutos)
 
 Requisitos: **Node.js 22.13 o superior**.
@@ -88,6 +95,8 @@ El backend también sirve el frontend, así que **con solo Render ya se puede ju
 npm test                                   # 14 pruebas E2E con servidor real y varios clientes Socket.io
 npx playwright install chromium            # (solo la primera vez)
 node --disable-warning=ExperimentalWarning tests/ui.test.js   # navegador real: celular, tableta y PC
+npm run test:host                          # modo GitHub Pages: broker MQTT local + navegador real (equipos, recargas, expulsión)
+npm run build:web                          # regenera docs/host.bundle.js si cambias server/game.js o el banco de preguntas
 ```
 
 Evidencia: `tests/last-run.txt` (resultado de la última ejecución) y `tests/screenshots/` (capturas en distintos tamaños).
