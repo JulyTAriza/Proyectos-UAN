@@ -1,0 +1,17 @@
+Ejecutado: 2026-11-03T15:40:26.598Z
+✅ 1-2. Crear partida con código y registrar 6 jugadores simultáneos
+✅ Evitar nombres duplicados (sin distinguir mayúsculas) y código inválido
+✅ Estado "listo" visible en la sala de espera
+✅ 15. Permisos: un jugador no puede ejecutar acciones de administrador
+✅ 3/6/7/10. Individual: pregunta oculta, respuestas simultáneas, puntaje y bono de velocidad
+✅ 8. Ranking en tiempo real con cambios de posición
+✅ 10. Temporizador: la pregunta se cierra sola al agotarse el tiempo; pausa congela el tiempo
+✅ 9. Reto automático al jugador con menor puntaje y validación por el admin
+✅ 11. Reconexión: el jugador recupera su sesión y puntaje
+✅ Ajuste manual de puntos y expulsión de un participante
+✅ 12. Pregunta final con puntaje doble y selección del ganador
+✅ 13. Persistencia: resultados guardados y estado intacto tras reiniciar el servidor
+✅ 4/5. Equipos libres: crear, unirse, límite, rotación de quien responde y ranking grupal
+✅ 5. Equipos automáticos: distribución balanceada
+
+14/14 pruebas superadas
